@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>月誌</title>
+<meta name="description" content="只屬於你的週期日誌。資料只存在你的手機裡。">
+<meta name="theme-color" content="#F4ECEA">
+<!-- iOS 安裝設定 -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="月誌">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#F4ECEA; --card:#FAF4F2; --ink:#4D3F42; --ink-muted:#9C8B8E; --line:#E8D8D6;
+  --rose:#C66E78; --rose-soft:#F4DEE0;
+  --pistachio:#C99A9D; --pistachio-soft:#EDDCDC;
+  --butter:#D9A079; --butter-soft:#F5E0D5;
+  --lavender:#A37889; --lavender-soft:#E4D5DC;
+  --num:'Jost','Avenir Next','Helvetica Neue',sans-serif;
+  --tc:"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+  --rose-text:#A3535A; --butter-text:#A07852; --pist-text:#925E66; --lav-text:#7E5763;
+  --gold:#C6857C; --ring-track:#EAD9D8; --danger:#A4555B; --banner-text:#8C5C5F;
+  --mem-grad:#F1E2E4; --nav-bg:rgba(255,255,255,.92);
+}
+html[data-theme="dark"]{
+  --cream:#251D21; --card:#332A2F; --ink:#F1E4E7; --ink-muted:#AD969D; --line:#4A3C42;
+  --rose:#D38B95; --rose-soft:#4D3239;
+  --pistachio:#C98F96; --pistachio-soft:#46333A;
+  --butter:#DCA478; --butter-soft:#493829;
+  --lavender:#B287A0; --lavender-soft:#3F2F3B;
+  --rose-text:#E8A8B0; --butter-text:#E2B488; --pist-text:#DFA6AE; --lav-text:#CFA0B8;
+  --gold:#E0A287; --ring-track:#41343A; --danger:#E59AA0; --banner-text:#E8C9A0;
+  --mem-grad:#3C2F37; --nav-bg:rgba(38,30,34,.92);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:var(--tc); background:var(--cream); color:var(--ink);
+  font-size:clamp(14px, 3.6vw, 15.5px); line-height:1.7; letter-spacing:0.03em;
+  line-break:strict; overflow-wrap:break-word;
+  padding-bottom:calc(72px + env(safe-area-inset-bottom));
+  -webkit-font-smoothing:antialiased;
+}
+header{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:calc(18px + env(safe-area-inset-top)) 22px 10px;
+}
+.brand{display:flex; align-items:center; gap:11px}
+.brand .logo{width:clamp(44px, 12vw, 56px); height:auto; flex:none;
+  filter:drop-shadow(0 2px 8px rgba(166,90,100,.18))}
+.brand-text{display:flex; flex-direction:column; gap:2px}
+header h1{font-size:clamp(22px, 6vw, 26px); font-weight:600; letter-spacing:0.16em; line-height:1.2}
+header .today-date{font-family:var(--num); font-size:14px; color:var(--ink-muted); letter-spacing:0.06em}
+.streak-pill{
+  display:inline-flex; align-items:center; gap:5px;
+  background:var(--butter-soft); color:var(--butter-text);
+  font-size:12px; padding:3px 11px; border-radius:99px; margin-left:8px;
+}
+main{padding:6px 18px 24px; max-width:480px; margin:0 auto}
+@media (min-width:640px){ main{max-width:560px} }
+.view{display:none}
+.view.active{display:block; animation:fadeUp .35s ease}
+@keyframes fadeUp{from{opacity:0; transform:translateY(6px)}to{opacity:1; transform:none}}
+@media (prefers-reduced-motion: reduce){
+  *{animation:none!important; transition:none!important}
+}
+
+/* ── 環形週期圖 ─────────────────── */
+.ring-wrap{position:relative; width:min(310px,84vw); margin:8px auto 4px}
+.ring-wrap svg{width:100%; height:auto; display:block}
+.ring-center{
+  position:absolute; inset:0; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; text-align:center; pointer-events:none;
+}
+.ring-center .cd-label{font-size:clamp(10px, 2.8vw, 11.5px); color:var(--ink-muted); letter-spacing:0.22em; text-transform:uppercase}
+.ring-center .cd-num{font-family:var(--num); font-size:clamp(42px, 12vw, 52px); font-weight:300; line-height:1.1; letter-spacing:0.03em; color:var(--ink)}
+.ring-center .phase-name{font-size:15px; font-weight:600; margin-top:2px}
+.ring-center .phase-tip{font-size:clamp(11.5px, 3.2vw, 12.5px); color:var(--ink-muted); margin-top:4px; max-width:200px; line-height:1.55}
+.dot-breathe{animation:breathe 2.8s ease-in-out infinite; transform-origin:center; transform-box:fill-box}
+@keyframes breathe{0%,100%{opacity:.85; transform:scale(1)}50%{opacity:1; transform:scale(1.25)}}
+
+/* 圖例 */
+.legend{display:flex; justify-content:center; gap:14px; flex-wrap:wrap; margin:2px 0 16px}
+.legend span{font-size:12px; color:var(--ink-muted); display:flex; align-items:center; gap:5px}
+.legend i{width:9px; height:9px; border-radius:50%; display:inline-block}
+
+/* ── 卡片與按鈕 ─────────────────── */
+.card{
+  background:var(--card); border-radius:20px; padding:18px 20px;
+  box-shadow:0 2px 14px rgba(90,82,76,.06); margin-bottom:14px;
+}
+.card h3{font-size:clamp(13.5px, 3.6vw, 14.5px); font-weight:600; letter-spacing:0.08em; margin-bottom:8px; display:flex; align-items:center; gap:8px; white-space:nowrap}
+.card h3 .h-dot{width:8px; height:8px; border-radius:50%}
+.btn{
+  display:block; width:100%; border:none; border-radius:16px;
+  padding:14px; font-size:clamp(14px, 3.8vw, 15px); font-weight:600; font-family:var(--tc);
+  letter-spacing:0.08em; white-space:nowrap; cursor:pointer; transition:transform .12s ease, filter .12s ease;
+}
+.btn:active{transform:scale(.985); filter:brightness(.97)}
+.btn-rose{background:var(--rose); color:#fff}
+.btn-soft{background:var(--rose-soft); color:var(--rose-text)}
+.btn-ghost{background:transparent; color:var(--ink-muted); border:1.5px solid var(--line)}
+.btn-row{display:flex; gap:10px}
+.btn-row .btn{flex:1}
+.next-period{display:flex; justify-content:space-between; align-items:baseline}
+.next-period .np-date{font-family:var(--num); font-size:clamp(19px, 5vw, 22px); font-weight:400; letter-spacing:0.04em}
+.next-period .np-in{font-size:13px; color:var(--ink-muted)}
+
+/* 今日紀錄縮影 */
+.today-tags{display:flex; flex-wrap:wrap; gap:7px; margin-top:6px}
+.tag{
+  font-size:12px; padding:4px 12px; border-radius:99px;
+  background:var(--lavender-soft); color:var(--lav-text);
+}
+.tag.t-flow{background:var(--rose-soft); color:var(--rose-text)}
+.tag.t-mood{background:var(--butter-soft); color:var(--butter-text)}
+.tag.t-energy{background:var(--pistachio-soft); color:var(--pist-text)}
+.empty-hint{font-size:13px; color:var(--ink-muted)}
+
+/* ── 紀錄列表 ─────────────────── */
+.rec-item{
+  background:var(--card); border-radius:16px; padding:14px 16px;
+  margin-bottom:10px; box-shadow:0 1px 8px rgba(90,82,76,.05);
+}
+.rec-item .rec-head{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:4px}
+.rec-item .rec-date{font-family:var(--num); font-size:16px; font-weight:600}
+.rec-item .rec-cd{font-size:11px; color:var(--ink-muted)}
+.rec-item.rec-period{border-left:4px solid var(--rose)}
+.rec-item .rec-note{font-size:13px; color:var(--ink); margin-top:6px; white-space:pre-wrap}
+
+/* ── 洞察解鎖卡 ─────────────────── */
+.unlock-card{position:relative; overflow:hidden}
+.unlock-card.locked{opacity:.62}
+.unlock-card .uc-req{font-size:12px; color:var(--ink-muted)}
+.unlock-card .uc-body{font-size:14px; margin-top:6px}
+.unlock-card .uc-big{font-family:var(--num); font-size:clamp(22px, 6vw, 26px); font-weight:400; margin:2px 0}
+.lock-ico{position:absolute; top:16px; right:18px; font-size:15px; color:var(--ink-muted)}
+.progress-track{height:7px; background:var(--line); border-radius:99px; margin-top:10px; overflow:hidden}
+.progress-fill{height:100%; border-radius:99px; background:var(--lavender); transition:width .5s ease}
+.badge-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:8px}
+.badge{
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  width:68px; padding:10px 4px; border-radius:14px; background:var(--cream);
+  font-size:11px; color:var(--ink-muted);
+}
+.badge.earned{background:var(--butter-soft); color:var(--butter-text); font-weight:600}
+.badge .b-ico{font-size:20px; filter:grayscale(1); opacity:.45}
+.badge.earned .b-ico{filter:none; opacity:1}
+.energy-bars{display:flex; align-items:flex-end; gap:10px; height:74px; margin-top:10px}
+.energy-bars .eb{flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; height:100%; justify-content:flex-end}
+.energy-bars .eb-bar{width:100%; border-radius:8px 8px 4px 4px; min-height:4px}
+.energy-bars .eb-label{font-size:10px; color:var(--ink-muted)}
+
+/* ── 設定 ─────────────────── */
+.setting-row{display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--line)}
+.setting-row:last-child{border-bottom:none}
+.setting-row label{font-size:14px}
+.setting-row .sub{display:block; font-size:11px; color:var(--ink-muted)}
+.stepper{display:flex; align-items:center; gap:12px}
+.stepper button{
+  width:32px; height:32px; border-radius:50%; border:none; font-size:18px;
+  background:var(--rose-soft); color:var(--rose-text); cursor:pointer;
+}
+.stepper .st-val{font-family:var(--num); font-size:19px; font-weight:600; min-width:30px; text-align:center}
+.danger{color:var(--danger)}
+
+/* ── 底部分頁列 ─────────────────── */
+nav{
+  position:fixed; bottom:0; left:0; right:0;
+  background:var(--nav-bg); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+  border-top:1px solid var(--line);
+  display:flex; padding-bottom:env(safe-area-inset-bottom);
+}
+nav button{
+  flex:1; border:none; background:none; padding:10px 0 8px;
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  font-size:clamp(11px, 3vw, 12px); letter-spacing:0.1em; color:var(--ink-muted);
+  font-family:var(--tc); cursor:pointer;
+}
+nav button.active{color:var(--rose-text); font-weight:600}
+nav button svg{width:21px; height:21px}
+
+/* ── 彈窗 ─────────────────── */
+.modal-mask{
+  position:fixed; inset:0; background:rgba(90,79,76,.35); z-index:50;
+  display:none; align-items:flex-end; justify-content:center;
+}
+.modal-mask.open{display:flex}
+.modal{
+  background:var(--cream); width:100%; max-width:480px;
+  border-radius:24px 24px 0 0; padding:22px 22px calc(22px + env(safe-area-inset-bottom));
+  max-height:86vh; overflow-y:auto; animation:slideUp .3s ease;
+}
+@keyframes slideUp{from{transform:translateY(40px); opacity:0}to{transform:none; opacity:1}}
+.modal h2{font-size:17px; font-weight:600; letter-spacing:0.1em; margin-bottom:14px}
+.modal .field{margin-bottom:16px}
+.modal .field > label{display:block; font-size:13px; font-weight:600; color:var(--ink-muted); margin-bottom:7px; letter-spacing:0.08em}
+input[type=date], textarea{
+  width:100%; border:1.5px solid var(--line); border-radius:14px;
+  padding:12px 14px; font-size:15px; font-family:var(--tc);
+  background:var(--card); color:var(--ink);
+}
+textarea{min-height:84px; resize:vertical}
+input:focus, textarea:focus, .btn:focus-visible, nav button:focus-visible{outline:2px solid var(--lavender); outline-offset:2px}
+.chips{display:flex; flex-wrap:wrap; gap:8px}
+.chip{
+  padding:7px 15px; border-radius:99px; font-size:13.5px; cursor:pointer;
+  background:var(--card); border:1.5px solid var(--line); color:var(--ink);
+  transition:all .12s ease; font-family:var(--tc);
+}
+.chip.on{background:var(--rose-soft); border-color:var(--rose); color:var(--rose-text); font-weight:600}
+.chips.c-lav .chip.on{background:var(--lavender-soft); border-color:var(--lavender); color:var(--lav-text)}
+.chips.c-but .chip.on{background:var(--butter-soft); border-color:var(--butter); color:var(--butter-text)}
+.energy-dots{display:flex; gap:14px}
+.energy-dots button{
+  width:34px; height:34px; border-radius:50%; border:1.5px solid var(--line);
+  background:var(--card); cursor:pointer; font-family:var(--num); font-size:15px; color:var(--ink-muted);
+}
+.energy-dots button.on{background:var(--pistachio); border-color:var(--pistachio); color:#fff; font-weight:600}
+.start-list{margin-top:14px}
+.start-list .sl-row{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:9px 0; border-bottom:1px solid var(--line); font-size:14px;
+}
+.start-list .sl-del{border:none; background:none; color:var(--danger); font-size:13px; cursor:pointer; padding:4px 8px}
+
+/* Toast */
+#toast{
+  position:fixed; left:50%; bottom:calc(90px + env(safe-area-inset-bottom));
+  transform:translateX(-50%) translateY(16px);
+  background:var(--ink); color:var(--cream); font-size:13.5px; letter-spacing:0.06em;
+  padding:10px 22px; border-radius:99px; opacity:0; pointer-events:none;
+  transition:all .3s ease; z-index:99; white-space:nowrap;
+}
+#toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+.section-hint{font-size:clamp(11.5px, 3.2vw, 12.5px); color:var(--ink-muted); text-align:center; margin:4px 0 14px; letter-spacing:0.04em}
+
+/* ── v4：可展開卡片 ── */
+.exp .exp-head{display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none; -webkit-user-select:none; gap:10px}
+.exp .exp-head h3{margin-bottom:0}
+.exp .exp-right{display:flex; align-items:center; gap:8px; flex:none}
+.exp .exp-status{font-size:clamp(11.5px,3.2vw,12.5px); color:var(--ink-muted); white-space:nowrap}
+.exp .chev-i{display:inline-block; color:var(--ink-muted); font-size:11px; transition:transform .25s ease}
+.exp.open .chev-i{transform:rotate(180deg)}
+.exp .exp-body{display:none}
+.exp.open .exp-body{display:block; margin-top:12px; animation:fadeUp .3s ease}
+
+/* ── v3：月之籤 ── */
+.qian-card{text-align:center; perspective:800px}
+.qian-inner{position:relative; min-height:96px; transform-style:preserve-3d; transition:transform .7s cubic-bezier(.2,.7,.3,1)}
+.qian-inner.flipped{transform:rotateY(180deg)}
+.qian-face{position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px}
+.qian-back{transform:rotateY(180deg)}
+.qian-stick{font-size:30px}
+.qian-text{font-size:clamp(13.5px, 3.8vw, 15px); line-height:1.85; color:var(--ink); max-width:92%; padding:0 4px}
+.qian-phase{font-size:11px; color:var(--ink-muted); letter-spacing:0.2em}
+.qian-btn{border:none; border-radius:99px; background:var(--lavender-soft); color:var(--lav-text);
+  padding:10px 26px; font-size:clamp(13px, 3.6vw, 14px); font-weight:600; letter-spacing:0.06em; cursor:pointer; font-family:var(--tc); white-space:nowrap}
+
+/* ── v3：解鎖紙花 ── */
+.confetti{position:fixed; width:9px; height:13px; border-radius:3px; z-index:200; pointer-events:none;
+  animation:confallin 1.5s ease-in forwards}
+@keyframes confallin{
+  0%{transform:translate(0,0) rotate(0); opacity:1}
+  100%{transform:translate(var(--dx), 78vh) rotate(640deg); opacity:0}
+}
+
+/* ── v2：回憶卡 ── */
+.memory-card{background:linear-gradient(135deg,var(--card),var(--mem-grad))}
+.memory-when{font-size:12px; color:var(--lav-text); margin-top:2px}
+.memory-quote{font-size:13.5px; color:var(--ink); margin-top:8px; white-space:pre-wrap; border-left:3px solid var(--lavender); padding-left:10px}
+
+/* ── v2：備份提醒橫幅 ── */
+.backup-banner{
+  display:flex; justify-content:space-between; align-items:center; gap:10px;
+  background:var(--butter-soft); border-radius:16px; padding:12px 16px;
+  margin-bottom:12px; font-size:13px; color:var(--banner-text);
+}
+.backup-banner button{
+  border:none; border-radius:99px; background:var(--butter); color:#fff;
+  font-weight:600; padding:7px 16px; font-size:13px; cursor:pointer;
+  font-family:var(--tc); white-space:nowrap;
+}
+
+/* ── v2：月報卡 ── */
+.month-nav{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px}
+.month-nav button{border:none; background:var(--cream); width:30px; height:30px; border-radius:50%; cursor:pointer; color:var(--ink); font-size:13px}
+.month-nav .mn-title{font-family:var(--num); font-size:clamp(15.5px, 4.4vw, 17px); font-weight:500; letter-spacing:0.06em}
+.month-stats{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:6px}
+.month-stats .ms{background:var(--cream); border-radius:12px; padding:8px 6px; text-align:center}
+.month-stats .ms b{font-family:var(--num); font-size:clamp(17px, 4.6vw, 20px); font-weight:400; display:block}
+.month-stats .ms span{font-size:clamp(10.5px, 3vw, 11.5px); color:var(--ink-muted)}
+
+/* ── v2：成就牆 ── */
+.wall-head{display:flex; justify-content:space-between; align-items:baseline}
+.wall-count{font-size:12px; color:var(--ink-muted)}
+.wall-tier{font-size:clamp(11.5px, 3.2vw, 12.5px); color:var(--ink-muted); letter-spacing:0.12em; margin:12px 0 6px}
+.wall-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px}
+.ach{
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  padding:10px 4px; border-radius:14px; background:var(--cream);
+  font-size:clamp(11px, 3vw, 12px); color:var(--ink-muted); text-align:center; line-height:1.4;
+}
+.ach.earned{background:var(--butter-soft); color:var(--butter-text); font-weight:600}
+.ach .a-ico{font-size:19px; filter:grayscale(1); opacity:.4}
+.ach.earned .a-ico{filter:none; opacity:1}
+.ach.hidden-egg .a-ico{filter:none; opacity:.5}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <img class="logo" src="logo-header.png" alt="月誌">
+    <div class="brand-text">
+      <h1>月誌</h1>
+      <span class="streak-pill" id="streakPill" style="display:none"></span>
+    </div>
+  </div>
+  <span class="today-date" id="todayDate"></span>
+</header>
+
+<main>
+  <!-- ════ 今日 ════ -->
+  <section class="view active" id="view-today">
+    <div class="backup-banner" id="backupBanner" style="display:none">
+      <span id="backupMsg"></span>
+      <button id="backupNow">立即備份</button>
+    </div>
+    <div class="ring-wrap">
+      <svg id="ringSvg" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg" aria-label="週期環形圖"></svg>
+      <div class="ring-center" id="ringCenter"></div>
+    </div>
+    <div class="legend">
+      <span><i style="background:var(--rose)"></i>經期</span>
+      <span><i style="background:var(--pistachio)"></i>濾泡期</span>
+      <span><i style="background:var(--butter)"></i>排卵期</span>
+      <span><i style="background:var(--lavender)"></i>黃體期</span>
+    </div>
+
+    <div class="card next-period" id="nextPeriodCard" style="display:none">
+      <div>
+        <h3><span class="h-dot" style="background:var(--rose)"></span>下次經期預估</h3>
+        <div class="np-date" id="npDate"></div>
+      </div>
+      <div class="np-in" id="npIn"></div>
+    </div>
+
+    <div class="card" id="todayEntryCard">
+      <h3><span class="h-dot" style="background:var(--lavender)"></span>今日紀錄</h3>
+      <div id="todaySummary" class="empty-hint">今天還沒有紀錄</div>
+    </div>
+
+    <div class="card qian-card" id="qianCard"></div>
+
+    <div class="card memory-card" id="memoryCard" style="display:none"></div>
+
+    <div class="btn-row">
+      <button class="btn btn-soft" id="btnPeriodStart">紀錄經期開始</button>
+      <button class="btn btn-rose" id="btnJournal">寫今日紀錄</button>
+    </div>
+  </section>
+
+  <!-- ════ 紀錄 ════ -->
+  <section class="view" id="view-records">
+    <p class="section-hint">所有紀錄，由近到遠</p>
+    <div id="recordList"></div>
+  </section>
+
+  <!-- ════ 洞察 ════ -->
+  <section class="view" id="view-insights">
+    <p class="section-hint">紀錄越久，看見越多</p>
+    <div class="card" id="streakCard"></div>
+    <div class="card" id="monthCard"></div>
+    <div class="card" id="wallCard"></div>
+    <div id="unlockList"></div>
+  </section>
+
+  <!-- ════ 設定 ════ -->
+  <section class="view" id="view-settings">
+    <div class="card">
+      <h3><span class="h-dot" style="background:var(--pistachio)"></span>週期參數</h3>
+      <div class="setting-row">
+        <label>預設週期長度<span class="sub">累積 2 次以上紀錄後，會改用你的實際平均</span></label>
+        <div class="stepper">
+          <button data-step="cycleLen:-1" aria-label="減少">−</button>
+          <span class="st-val" id="valCycleLen"></span>
+          <button data-step="cycleLen:1" aria-label="增加">＋</button>
+        </div>
+      </div>
+      <div class="setting-row">
+        <label>經期長度</label>
+        <div class="stepper">
+          <button data-step="periodLen:-1" aria-label="減少">−</button>
+          <span class="st-val" id="valPeriodLen"></span>
+          <button data-step="periodLen:1" aria-label="增加">＋</button>
+        </div>
+      </div>
+      <div class="setting-row">
+        <label>生日<span class="sub">填了，才有機會遇到某個隱藏彩蛋 🎁</span></label>
+        <input type="date" id="birthdayInput" style="width:155px">
+      </div>
+      <div class="setting-row">
+        <label>外觀<span class="sub">深色適合夜晚記錄；自動會跟著系統</span></label>
+        <div class="chips c-lav" id="themeChips" style="flex:none"></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3><span class="h-dot" style="background:var(--butter)"></span>我的資料</h3>
+      <p class="empty-hint" style="margin-bottom:6px">所有資料只存在這支手機的瀏覽器裡，不會上傳到任何地方。建議偶爾匯出備份。</p>
+      <p class="empty-hint" id="dataStatus" style="margin-bottom:12px"></p>
+      <div class="btn-row">
+        <button class="btn btn-ghost" id="btnExport">匯出備份</button>
+        <button class="btn btn-ghost" id="btnImport">匯入備份</button>
+      </div>
+      <input type="file" id="importFile" accept=".json" style="display:none">
+    </div>
+    <div class="card">
+      <button class="btn btn-ghost danger" id="btnClear">清除全部資料</button>
+    </div>
+    <p class="section-hint">月誌 v1.0 · 只屬於你的週期日誌</p>
+  </section>
+</main>
+
+<nav id="nav">
+  <button data-view="today" class="active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="7" r="1.6" fill="currentColor" stroke="none"/></svg>
+    今日
+  </button>
+  <button data-view="records">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h14v16H5z" rx="2"/><path d="M9 9h6M9 13h6M9 17h4"/></svg>
+    紀錄
+  </button>
+  <button data-view="insights">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l2.1 5.4L20 9l-4.4 3.8L17 19l-5-3.2L7 19l1.4-6.2L4 9l5.9-.6z"/></svg>
+    洞察
+  </button>
+  <button data-view="settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v3M12 18.2v3M2.8 12h3M18.2 12h3M5.5 5.5l2.1 2.1M16.4 16.4l2.1 2.1M18.5 5.5l-2.1 2.1M7.6 16.4l-2.1 2.1"/></svg>
+    設定
+  </button>
+</nav>
+
+<!-- ════ 彈窗：經期開始 ════ -->
+<div class="modal-mask" id="modalPeriod">
+  <div class="modal" role="dialog" aria-label="紀錄經期開始">
+    <h2>紀錄經期開始</h2>
+    <div class="field">
+      <label>開始日期</label>
+      <input type="date" id="periodDate">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" data-close="modalPeriod">取消</button>
+      <button class="btn btn-rose" id="savePeriod">確定</button>
+    </div>
+    <div class="start-list" id="startList"></div>
+  </div>
+</div>
+
+<!-- ════ 彈窗：今日紀錄 ════ -->
+<div class="modal-mask" id="modalJournal">
+  <div class="modal" role="dialog" aria-label="今日紀錄">
+    <h2 id="journalTitle">今日紀錄</h2>
+    <div class="field">
+      <label>經血量</label>
+      <div class="chips" id="flowChips"></div>
+    </div>
+    <div class="field">
+      <label>症狀（可複選）</label>
+      <div class="chips c-lav" id="symptomChips"></div>
+    </div>
+    <div class="field">
+      <label>心情</label>
+      <div class="chips c-but" id="moodChips"></div>
+    </div>
+    <div class="field">
+      <label>精力</label>
+      <div class="energy-dots" id="energyDots"></div>
+    </div>
+    <div class="field">
+      <label>自由筆記</label>
+      <textarea id="noteInput" placeholder="今天身體和心裡的任何事⋯⋯"></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" data-close="modalJournal">取消</button>
+      <button class="btn btn-rose" id="saveJournal">儲存</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+'use strict';
+/* ═══════════════ 資料層 ═══════════════ */
+const KEY = 'moonJournal.v1';
+const FLOWS = ['無','少','中','多'];
+const SYMPTOMS = ['腹痛','頭痛','腰痠','脹氣','乳房脹痛','疲倦','長痘','失眠','食慾增加'];
+const MOODS = ['平靜','開心','煩躁','低落','焦慮','敏感'];
+const BADGES = [
+  {days:3,  ico:'🌱', name:'萌芽 3 天'},
+  {days:7,  ico:'🌙', name:'滿週 7 天'},
+  {days:21, ico:'🌸', name:'習慣 21 天'},
+  {days:66, ico:'🌕', name:'恆星 66 天'},
+  {days:100,ico:'🌟', name:'恆心 100 天'},
+  {days:365,ico:'🌌', name:'一年的我'},
+];
+
+const DEF = () => ({
+  starts:[], entries:{},
+  settings:{cycleLen:28, periodLen:5, birthday:null, theme:'light'},
+  maxStreak:0, achievements:{}, lastBackupCount:0, lastBackupDate:null, nightOwl:false,
+  qian:null, qianCount:0, hasImported:false, dawnBird:false
+});
+let state = load();
+let persistGranted = null;   // 永久儲存狀態（稍後由系統回覆）
+const openState = { month:true, wall:false, u0:false, u1:false, u2:false, u3:false };
+document.addEventListener('click', (e)=>{
+  const head = e.target.closest('.exp-head');
+  if(!head) return;
+  const card = head.closest('.exp');
+  const k = card.dataset.k;
+  openState[k] = !openState[k];
+  card.classList.toggle('open', openState[k]);
+});
+function load(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(raw){
+      const s = JSON.parse(raw);
+      const out = Object.assign(DEF(), s);
+      out.settings = Object.assign(DEF().settings, s.settings||{});
+      return out;
+    }
+  }catch(e){}
+  return DEF();
+}
+function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
+
+/* ═══════════════ 日期工具 ═══════════════ */
+function todayStr(){ const d=new Date(); return fmt(d); }
+function fmt(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function parse(s){ const [y,m,dd]=s.split('-').map(Number); return new Date(y,m-1,dd); }
+function diffDays(a,b){ return Math.round((parse(b)-parse(a))/86400000); }
+function addDays(s,n){ const d=parse(s); d.setDate(d.getDate()+n); return fmt(d); }
+function niceDate(s){ const d=parse(s); return (d.getMonth()+1)+' 月 '+d.getDate()+' 日'; }
+function weekday(s){ return ['日','一','二','三','四','五','六'][parse(s).getDay()]; }
+
+/* ═══════════════ 週期計算 ═══════════════ */
+function sortedStarts(){ return [...state.starts].sort(); }
+function avgCycle(){
+  const st = sortedStarts();
+  if(st.length < 2) return state.settings.cycleLen;
+  const diffs = [];
+  for(let i=Math.max(1,st.length-6); i<st.length; i++) diffs.push(diffDays(st[i-1], st[i]));
+  const valid = diffs.filter(d=>d>=15 && d<=60);
+  if(!valid.length) return state.settings.cycleLen;
+  return Math.round(valid.reduce((a,b)=>a+b,0)/valid.length);
+}
+function cycleInfo(dateStr){
+  const st = sortedStarts().filter(s=>s<=dateStr);
+  if(!st.length) return null;
+  const last = st[st.length-1];
+  const day = diffDays(last, dateStr) + 1;
+  const len = avgCycle();
+  return {day, len, lastStart:last};
+}
+function phaseOf(day, len, periodLen){
+  const ovu = Math.max(periodLen+2, len-14);          // 排卵中心日
+  if(day <= periodLen) return {key:'menstrual', name:'經期', color:'var(--rose)', tip:'好好休息，溫熱飲食，對自己溫柔一點'};
+  if(day >= ovu-1 && day <= ovu+1) return {key:'ovulation', name:'排卵期', color:'var(--butter)', tip:'精力與狀態的高峰，適合重要的事'};
+  if(day < ovu) return {key:'follicular', name:'濾泡期', color:'var(--pistachio)', tip:'能量回升中，適合啟動新計畫'};
+  return {key:'luteal', name:'黃體期', color:'var(--lavender)', tip:'步調放慢，留意 PMS，安排緩衝時間'};
+}
+
+/* ═══════════════ 成就系統 ═══════════════ */
+function moonAge(d){ // 月齡：0 = 新月，約 14.77 = 滿月
+  const ref = Date.UTC(2000, 0, 6, 18, 14);   // 已知新月時刻
+  const days = (d.getTime() - ref) / 86400000;
+  return ((days % 29.530588) + 29.530588) % 29.530588;
+}
+function isFullMoon(d){ const a = moonAge(d); return a >= 13.9 && a <= 15.7; }
+function isNewMoon(d){ const a = moonAge(d); return a <= 1.0 || a >= 28.53; }
+function moonEmoji(d){
+  const a = moonAge(d);
+  if(a < 1.0 || a >= 28.53) return ['🌑','新月'];
+  if(a < 6.4)  return ['🌒','眉月'];
+  if(a < 8.4)  return ['🌓','上弦月'];
+  if(a < 13.9) return ['🌔','盈凸月'];
+  if(a < 15.7) return ['🌕','滿月'];
+  if(a < 21.1) return ['🌖','虧凸月'];
+  if(a < 23.1) return ['🌗','下弦月'];
+  return ['🌘','殘月'];
+}
+
+/* ═══════════════ 月之籤 ═══════════════ */
+const QIAN = {
+  menstrual: [
+    '今天的任務只有一個：對自己好。其他都可以先擺著。',
+    '潮水退去的日子，岸邊才看得見平常看不見的東西。',
+    '允許自己慢下來。也不算落後，就只是另一種節奏。',
+    '一杯熱咖啡，一條毯子，一個不被打擾的下午。',
+    '身體在做很重要的事，但需要妳陪著。',
+    '今天的妳不需要表現，只需要存在。',
+    '把「應該」這兩個字，今天先放抽屜。',
+    '痛的時候，記得呼吸。不是忍著，是陪著。',
+    '一條圍巾、一雙厚襪子、一句「我今天就這樣」。',
+    '經血是身體的誠實。它不會說謊。',
+    '不想笑就不要笑。沒有人規定。',
+    '熱敷的溫度，比任何道理都安慰。',
+    '今天可以推掉那場聚會。下次再見就好。',
+    '妳不是脆弱，是正在脫掉一層舊的自己。',
+    '一杯黑糖薑茶的時間，是給自己的。',
+    '今天的眼淚，不需要理由。',
+    '早一點睡。地球少了妳一個晚上不會停。',
+    '把「我很好」換成「我今天累」。練習說。',
+    '子宮在工作，妳就是它的休假理由。',
+    '紅色不是傷口，是節奏。',
+    '今天最重要的兩個字：好好。',
+  ],
+  follicular: [
+    '種子破土的日子。想了很久的那件事，今天起個頭。',
+    '能量正在回來，像春天一寸一寸往北走。',
+    '今天適合說「好」。新的邀請、新的想法，接著說「好啊」。',
+    '把待辦清單裡最有趣的那項，移到最上面。',
+    '妳比自己以為的更有餘裕。試試看。',
+    '不要等萬事俱備。先動，路會自己出現。',
+    '今天適合學一件新的小事。三十分鐘就好。',
+    '想聯絡誰就聯絡。妳的訊息會剛好抵達他需要的時候。',
+    '把房間整理一個角落。新的能量需要空位。',
+    '今天的好奇心是真的。跟著走。',
+    '把那個拖了三週的訊息，今天回。',
+    '計畫一場短旅行。三天兩夜就夠。',
+    '今天適合報名一件「萬一我做得到呢」的事。',
+    '寫下三個今年想完成的事。寫在紙上，不是腦裡。',
+    '春天裡的小苗不問結果。妳今天也可以不問。',
+    '妳的笑變多了。讓人看見。',
+    '今天的決定，相信第一個直覺。',
+    '出門走走。換條沒走過的路。',
+    '把舊習慣換一個。從最小的開始：水杯、鬧鐘、走路的順序。',
+    '妳正在變強。緩慢，但是真的。',
+    '今天是給未來的妳寄信的好日子。',
+  ],
+  ovulation: [
+    '重要的對話、大膽的提案，就是今天。',
+    '光最亮的時候，影子最短。少想一點，多做一點。',
+    '今天的妳說話有分量。用在值得的地方。',
+    '把最難開口的事情，挑在今天說。',
+    '高峰不常有。在山頂多待一會兒，看看風景。',
+    '想做的，今天做。明天會找藉口。',
+    '今天的眼神會被看見。穿妳最喜歡的那件。',
+    '寄出那封信。投出那份履歷。按下那個鍵。',
+    '妳的判斷力今天最準。重要的決定挑現在。',
+    '今天適合站到前面去。後面留給別人。',
+    '把「也許」換成「我來」。',
+    '不會的事，今天去問。問了就學會。',
+    '把那個一直拖著的會議，今天約。',
+    '妳發出的光，今天會聚攏該來的人。',
+    '跟自己說一次「我可以」。再做一次給自己看。',
+    '今天的笑容是貨幣。慷慨地花。',
+    '妳的聲音不必小。空間夠大。',
+    '把退路砍掉一條。前面的路就會更清楚。',
+    '今天適合追求，不適合等待。',
+    '重要的人，今天告訴他。明天可能就忘了。',
+    '排卵期的妳是會發電的。記得分一點給自己。',
+  ],
+  luteal: [
+    '重要的東西收好了嗎？',
+    '今天容易把小事看成大事。先睡一覺，明天再決定。',
+    '對別人寬一寸，對自己寬一尺。',
+    '速度放慢三成，錯誤會少七成。',
+    '煩躁不是妳的錯，是潮汐。知道這件事，就贏一半了。',
+    '今天聽到的話，先放兩天再回。',
+    '不要在今天回那封讓妳生氣的訊息。',
+    '想哭就哭。眼淚不是輸。',
+    '今天適合整理，不適合決定。',
+    '把今天的清單砍一半。剩下的也可以再砍。',
+    '為自己留一段「什麼都不做」的時間。',
+    '今天的妳很敏感，但敏感不是缺點。',
+    '不必勉強合群。一個人吃飯也很好。',
+    '想吃甜的就吃。今天不算數。',
+    '明天的會議，今天先列三個重點就好。',
+    '把窗戶打開十分鐘。讓今天的心情換氣。',
+    '想念誰，就跟誰說。但不必等回覆。',
+    '妳不是難搞，是潮在退。',
+    '今天適合的運動只有：走路、伸展、深呼吸。',
+    '把「為什麼是我」換成「現在我可以做什麼」。',
+    '退潮的日子，海仍然在。妳也是。',
+  ],
+  any: [
+    '記錄本身就是答案的一部分。',
+    '今天的月亮和妳，都走在自己的軌道上。',
+    '不確定的時候，先寫下來。字會替妳找答案。',
+    '日子是一天一天過的，也是一筆一筆記下來的。',
+    '妳的身體記得妳忘了的事。',
+    '今天的妳，是去年此時的妳寫信給未來的回應。',
+    '月亮不問為什麼會圓會缺。妳也不必。',
+    '重複不是無聊，是穩定。',
+    '今天最小的一件好事，先寫下來。',
+    '妳和昨天的妳，已經不一樣了。',
+    '月亮有它的時間表。妳也有妳的。',
+    '累的時候，記得自己是動物。動物會休息。',
+    '答案常常不在問題裡，在問題的旁邊。',
+    '妳的節奏是對的。是世界太快。',
+    '今天的選擇，不必昭告天下。自己知道就好。',
+    '一個週期是一次練習。練到老的那種。',
+    '妳不是要變成別人，是要變回自己。',
+    '今天可以什麼都不解釋。',
+    '月亮的工作是發光，不是被理解。妳也是。',
+    '三十年後妳會謝謝今天有記錄的妳。',
+  ],
+};
+function drawQian(){
+  if(state.qian && state.qian.date === todayStr()) return;   // 一天一籤
+  const ci = cycleInfo(todayStr());
+  let key = 'any';
+  if(ci && ci.day <= ci.len) key = phaseOf(ci.day, ci.len, state.settings.periodLen).key;
+  const pool = QIAN[key].concat(QIAN.any);
+  state.qian = { date: todayStr(), key, text: pool[Math.floor(Math.random()*pool.length)] };
+  state.qianCount = (state.qianCount||0) + 1;
+  save();
+  document.getElementById('qianInner').classList.add('flipped');
+  setTimeout(()=>{ checkAchievements(); renderInsights(); }, 750);
+}
+function renderQian(){
+  const card = document.getElementById('qianCard');
+  const drawn = state.qian && state.qian.date === todayStr();
+  const phName = {menstrual:'靜潮',follicular:'萌芽',ovulation:'滿潮',luteal:'潮退',any:'月之'};
+  card.innerHTML = `<div class="qian-inner ${drawn?'flipped':''}" id="qianInner">
+    <div class="qian-face qian-front">
+      <span class="qian-stick">🎴</span>
+      <button class="qian-btn" id="qianDraw">抽一支今日的月之籤</button>
+    </div>
+    <div class="qian-face qian-back">
+      <span class="qian-phase">${drawn?phName[state.qian.key]+'之籤':''}</span>
+      <div class="qian-text">${drawn?state.qian.text:''}</div>
+    </div>
+  </div>`;
+  const btn = document.getElementById('qianDraw');
+  if(btn) btn.addEventListener('click', ()=>{ drawQian(); renderQian2(); });
+}
+function renderQian2(){ // 抽完後補上籤文再翻面
+  const card = document.getElementById('qianCard');
+  const phName = {menstrual:'靜潮',follicular:'萌芽',ovulation:'滿潮',luteal:'潮退',any:'月之'};
+  card.querySelector('.qian-back .qian-phase').textContent = phName[state.qian.key]+'之籤';
+  card.querySelector('.qian-back .qian-text').textContent = state.qian.text;
+  card.querySelector('.qian-inner').classList.add('flipped');
+}
+
+/* ═══════════════ 紙花慶祝 ═══════════════ */
+function confetti(){
+  const colors = ['var(--rose)','var(--pistachio)','var(--butter)','var(--lavender)','var(--gold)'];
+  for(let i=0;i<26;i++){
+    const p = document.createElement('div');
+    p.className = 'confetti';
+    p.style.background = colors[i % colors.length];
+    p.style.left = (18 + Math.random()*64) + 'vw';
+    p.style.top = '-16px';
+    p.style.setProperty('--dx', (Math.random()*160-80)+'px');
+    p.style.animationDelay = (Math.random()*0.35)+'s';
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(), 2100);
+  }
+}
+function recordCount(){ return state.starts.length + Object.keys(state.entries).length; }
+
+const ACH = [
+  // 堅持層（與連續紀錄徽章同步）
+  ...BADGES.map(b=>({id:'s'+b.days, tier:'堅持', ico:b.ico, name:b.name, desc:'連續紀錄 '+b.days+' 天',
+    test:()=> (state.maxStreak||0) >= b.days })),
+  // 里程層（累積週期，用月相一路變圓）
+  {id:'c1',  tier:'里程', ico:'🌒', name:'啟程',     desc:'紀錄第 1 個週期', test:()=>sortedStarts().length>=1},
+  {id:'c3',  tier:'里程', ico:'🌓', name:'上弦',     desc:'累積 3 個週期',   test:()=>sortedStarts().length>=3},
+  {id:'c6',  tier:'里程', ico:'🌔', name:'盈凸',     desc:'累積 6 個週期',   test:()=>sortedStarts().length>=6},
+  {id:'c12', tier:'里程', ico:'🌕', name:'圓滿一年', desc:'累積 12 個週期',  test:()=>sortedStarts().length>=12},
+  {id:'c24', tier:'里程', ico:'🌖', name:'兩年同行', desc:'累積 24 個週期',  test:()=>sortedStarts().length>=24},
+  // 探索層（第一次做某件好事）
+  {id:'e_note',   tier:'探索', ico:'✍️', name:'心裡話',     desc:'寫下第一篇自由筆記',
+    test:()=>Object.values(state.entries).some(e=>e.note)},
+  {id:'e_backup', tier:'探索', ico:'🛡️', name:'資料守護者', desc:'第一次匯出備份',
+    test:()=>!!state.lastBackupDate},
+  {id:'e_phases', tier:'探索', ico:'🎨', name:'走過四季',   desc:'四個階段都留過紀錄',
+    test:()=>{
+      const seen={};
+      Object.keys(state.entries).forEach(d=>{
+        const ci=cycleInfo(d); if(!ci) return;
+        seen[phaseOf(ci.day, ci.len, state.settings.periodLen).key]=1;
+      });
+      return Object.keys(seen).length>=4;
+    }},
+  {id:'e_full',   tier:'探索', ico:'📋', name:'全紀錄',     desc:'一筆紀錄五項全填',
+    test:()=>Object.values(state.entries).some(e=>e.flow && (e.symptoms||[]).length && e.mood && e.energy && e.note)},
+  {id:'e_qian',   tier:'探索', ico:'🎴', name:'第一籤',     desc:'抽過月之籤',
+    test:()=>(state.qianCount||0)>=1},
+  {id:'e_qian30', tier:'探索', ico:'⛩️', name:'籤友',       desc:'累積抽籤 30 次',
+    test:()=>(state.qianCount||0)>=30},
+  {id:'e_import', tier:'探索', ico:'🧳', name:'搬家成功',   desc:'成功匯入一次備份',
+    test:()=>!!state.hasImported},
+  {id:'e_50',     tier:'探索', ico:'📚', name:'五十篇',     desc:'累積 50 篇日記',
+    test:()=>Object.keys(state.entries).length>=50},
+  {id:'e_100',    tier:'探索', ico:'🏛️', name:'百日誌',     desc:'累積 100 篇日記',
+    test:()=>Object.keys(state.entries).length>=100},
+  {id:'e_symall', tier:'探索', ico:'🧩', name:'症狀圖鑑',   desc:'九種症狀都記過一次',
+    test:()=>{
+      const seen={};
+      Object.values(state.entries).forEach(e=>(e.symptoms||[]).forEach(s=>seen[s]=1));
+      return Object.keys(seen).length>=SYMPTOMS.length;
+    }},
+  {id:'e_moodall',tier:'探索', ico:'🎭', name:'心情光譜',   desc:'六種心情都記過一次',
+    test:()=>{
+      const seen={};
+      Object.values(state.entries).forEach(e=>{ if(e.mood) seen[e.mood]=1; });
+      return Object.keys(seen).length>=MOODS.length;
+    }},
+  // 彩蛋層（達成前只顯示 ？？？）
+  {id:'x_fullmoon', tier:'彩蛋', ico:'🌝', name:'與月同步', desc:'在滿月之夜寫下紀錄', hidden:true,
+    test:()=>Object.keys(state.entries).some(d=>isFullMoon(parse(d)))},
+  {id:'x_newmoon',  tier:'彩蛋', ico:'🌚', name:'新月之始', desc:'在新月之夜寫下紀錄', hidden:true,
+    test:()=>Object.keys(state.entries).some(d=>isNewMoon(parse(d)))},
+  {id:'x_newyear',  tier:'彩蛋', ico:'🎆', name:'跨年之夜', desc:'在 12 月 31 日寫下紀錄', hidden:true,
+    test:()=>Object.keys(state.entries).some(d=>d.slice(5)==='12-31')},
+  {id:'x_christmas',tier:'彩蛋', ico:'🎄', name:'冬日燈火', desc:'在 12 月 25 日寫下紀錄', hidden:true,
+    test:()=>Object.keys(state.entries).some(d=>d.slice(5)==='12-25')},
+  {id:'x_birthday', tier:'彩蛋', ico:'🎂', name:'生日快樂', desc:'在生日當天寫下紀錄', hidden:true,
+    test:()=>{
+      const b=state.settings.birthday; if(!b) return false;
+      return Object.keys(state.entries).some(d=>d.slice(5)===b.slice(5));
+    }},
+  {id:'x_owl',      tier:'彩蛋', ico:'🦉', name:'夜貓子',   desc:'深夜 11 點後完成紀錄', hidden:true,
+    test:()=>!!state.nightOwl},
+  {id:'x_dawn',     tier:'彩蛋', ico:'🌅', name:'晨光',     desc:'早上 6 點前完成紀錄', hidden:true,
+    test:()=>!!state.dawnBird},
+  {id:'x_longnote', tier:'彩蛋', ico:'📜', name:'長信',     desc:'單篇筆記寫滿 150 字', hidden:true,
+    test:()=>Object.values(state.entries).some(e=>(e.note||'').length>=150)},
+  {id:'x_lucky',    tier:'彩蛋', ico:'🍀', name:'第 77 篇', desc:'寫下第 77 篇日記', hidden:true,
+    test:()=>Object.keys(state.entries).length>=77},
+];
+function checkAchievements(){
+  const newly=[];
+  ACH.forEach(a=>{
+    if(!state.achievements[a.id] && a.test()){
+      state.achievements[a.id]=todayStr(); newly.push(a);
+    }
+  });
+  if(newly.length){
+    save();
+    confetti();
+    toast('🎉 解鎖成就「'+newly[0].name+'」'+(newly.length>1?'等 '+newly.length+' 項！':'！'));
+  }
+  return newly.length;
+}
+
+/* ═══════════════ 環形圖 ═══════════════ */
+function drawRing(){
+  const svg = document.getElementById('ringSvg');
+  const center = document.getElementById('ringCenter');
+  const cx=160, cy=160, r=126, sw=24;
+  const C = 2*Math.PI*r;
+  const info = cycleInfo(todayStr());
+  let html = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--ring-track)" stroke-width="${sw}"/>`;
+
+  if(!info){
+    svg.innerHTML = html;
+    center.innerHTML = `<div class="cd-label">Moon Journal</div>
+      <div class="cd-num" style="font-size:34px">○</div>
+      <div class="phase-tip">等待第一筆紀錄<br>點「紀錄經期開始」開始你的月誌</div>`;
+    return;
+  }
+  const len = info.len, pl = Math.min(state.settings.periodLen, len-4);
+  const ovu = Math.max(pl+2, len-14);
+  // 四段弧長（天數）：經期 / 濾泡 / 排卵(3天) / 黃體
+  const segs = [
+    {days:pl, color:'var(--rose)'},
+    {days:Math.max(0, ovu-pl-2), color:'var(--pistachio)'},
+    {days:3, color:'var(--butter)'},
+    {days:len-(ovu+1), color:'var(--lavender)'},
+  ];
+  const gap = C*0.012;
+  let offset = 0;
+  segs.forEach(s=>{
+    if(s.days<=0) return;
+    const arc = (s.days/len)*C - gap;
+    html += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${s.color}"
+      stroke-width="${sw}" stroke-linecap="round"
+      stroke-dasharray="${Math.max(arc,2)} ${C}"
+      stroke-dashoffset="${-offset}"
+      transform="rotate(-90 ${cx} ${cy})"/>`;
+    offset += (s.days/len)*C;
+  });
+  // 今天的金點（呼吸）
+  const dayClamped = Math.min(info.day, len);
+  const ang = ((dayClamped-0.5)/len)*2*Math.PI - Math.PI/2;
+  const dx = cx + r*Math.cos(ang), dy = cy + r*Math.sin(ang);
+  html += `<g class="dot-breathe"><circle cx="${dx}" cy="${dy}" r="11" fill="var(--card)"/><circle cx="${dx}" cy="${dy}" r="7.5" fill="var(--gold)"/></g>`;
+  svg.innerHTML = html;
+
+  const ph = phaseOf(info.day, len, pl);
+  const over = info.day > len;
+  center.innerHTML = `<div class="cd-label">Cycle Day</div>
+    <div class="cd-num">${info.day}</div>
+    <div class="phase-name" style="color:${over?'var(--ink-muted)':ph.color.replace('var(--rose)','var(--rose-text)').replace('var(--pistachio)','var(--pist-text)').replace('var(--butter)','var(--butter-text)').replace('var(--lavender)','var(--lav-text)')}">${over?'週期已超過預估':ph.name}</div>
+    <div class="phase-tip">${over?'若經期已來，記得按「紀錄經期開始」':ph.tip}</div>`;
+}
+
+/* ═══════════════ 今日畫面 ═══════════════ */
+function renderToday(){
+  const me = moonEmoji(new Date());
+  document.getElementById('todayDate').textContent = niceDate(todayStr())+'（'+weekday(todayStr())+'）'+me[0];
+  document.getElementById('todayDate').title = '今晚是'+me[1];
+  drawRing();
+  // 下次預估
+  const st = sortedStarts();
+  const card = document.getElementById('nextPeriodCard');
+  if(st.length){
+    const next = addDays(st[st.length-1], avgCycle());
+    const inDays = diffDays(todayStr(), next);
+    document.getElementById('npDate').textContent = niceDate(next);
+    document.getElementById('npIn').textContent = inDays>=0 ? '還有 '+inDays+' 天' : '已超過 '+(-inDays)+' 天';
+    card.style.display='flex';
+  } else card.style.display='none';
+  // 今日紀錄縮影
+  const e = state.entries[todayStr()];
+  const box = document.getElementById('todaySummary');
+  if(!e){ box.className='empty-hint'; box.textContent='今天還沒有紀錄'; }
+  else{
+    box.className=''; let h='<div class="today-tags">';
+    if(e.flow && e.flow!=='無') h+=`<span class="tag t-flow">經血量 ${e.flow}</span>`;
+    (e.symptoms||[]).forEach(s=>h+=`<span class="tag">${s}</span>`);
+    if(e.mood) h+=`<span class="tag t-mood">${e.mood}</span>`;
+    if(e.energy) h+=`<span class="tag t-energy">精力 ${'●'.repeat(e.energy)}</span>`;
+    h+='</div>';
+    if(e.note) h+=`<div style="font-size:13px;margin-top:8px;color:var(--ink)">${esc(e.note)}</div>`;
+    box.innerHTML=h;
+  }
+  renderStreakPill();
+  renderQian();
+  renderMemory();
+  renderBackupBanner();
+}
+/* 回憶卡：去年／前幾年／30 天前的今天 */
+function renderMemory(){
+  const card=document.getElementById('memoryCard');
+  const t=todayStr(), md=t.slice(5), y=Number(t.slice(0,4));
+  let hit=null, label='';
+  for(let i=1;i<=5;i++){
+    const d=(y-i)+'-'+md;
+    if(state.entries[d]){ hit=d; label=(i===1?'去年':i+' 年前')+'的今天'; break; }
+  }
+  if(!hit){ const d=addDays(t,-30); if(state.entries[d]){ hit=d; label='30 天前的你'; } }
+  if(!hit){ card.style.display='none'; return; }
+  const e=state.entries[hit];
+  const bits=[];
+  if(e.mood) bits.push(e.mood);
+  if(e.energy) bits.push('精力 '+'●'.repeat(e.energy));
+  (e.symptoms||[]).slice(0,3).forEach(s=>bits.push(s));
+  card.innerHTML = `<h3><span class="h-dot" style="background:var(--lavender)"></span>回憶 · ${label}</h3>
+    <div class="memory-when">${niceDate(hit)}${bits.length?' · '+bits.join('｜'):''}</div>
+    ${e.note?`<div class="memory-quote">${esc(e.note)}</div>`:''}`;
+  card.style.display='block';
+}
+/* 備份橫幅：未備份紀錄達 30 筆就提醒 */
+function renderBackupBanner(){
+  const n = recordCount() - (state.lastBackupCount||0);
+  const bn = document.getElementById('backupBanner');
+  if(n>=30){
+    document.getElementById('backupMsg').textContent='已累積 '+n+' 筆未備份的紀錄';
+    bn.style.display='flex';
+  } else bn.style.display='none';
+}
+function esc(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+/* ═══════════════ 紀錄列表 ═══════════════ */
+function renderRecords(){
+  const list = document.getElementById('recordList');
+  const items = [];
+  sortedStarts().forEach(s=>items.push({date:s, type:'period'}));
+  Object.keys(state.entries).forEach(d=>items.push({date:d, type:'entry', data:state.entries[d]}));
+  items.sort((a,b)=> a.date===b.date ? (a.type==='period'?-1:1) : (a.date<b.date?1:-1));
+  if(!items.length){ list.innerHTML='<div class="card empty-hint" style="text-align:center">還沒有任何紀錄。<br>回到「今日」開始你的第一筆。</div>'; return; }
+  list.innerHTML = items.map(it=>{
+    const ci = cycleInfo(it.date);
+    const cd = ci ? `Day ${ci.day}` : '';
+    if(it.type==='period'){
+      return `<div class="rec-item rec-period"><div class="rec-head">
+        <span class="rec-date">${niceDate(it.date)}</span><span class="rec-cd">經期開始 🌹</span></div></div>`;
+    }
+    const e = it.data; let tags='<div class="today-tags">';
+    if(e.flow && e.flow!=='無') tags+=`<span class="tag t-flow">${e.flow}</span>`;
+    (e.symptoms||[]).forEach(s=>tags+=`<span class="tag">${s}</span>`);
+    if(e.mood) tags+=`<span class="tag t-mood">${e.mood}</span>`;
+    if(e.energy) tags+=`<span class="tag t-energy">${'●'.repeat(e.energy)}</span>`;
+    tags+='</div>';
+    return `<div class="rec-item"><div class="rec-head">
+      <span class="rec-date">${niceDate(it.date)}</span><span class="rec-cd">${cd}</span></div>
+      ${tags}${e.note?`<div class="rec-note">${esc(e.note)}</div>`:''}</div>`;
+  }).join('');
+}
+
+/* ═══════════════ 連續紀錄與徽章 ═══════════════ */
+function currentStreak(){
+  let n=0, d=todayStr();
+  if(!state.entries[d]) d=addDays(d,-1);          // 今天還沒寫，從昨天往回算
+  while(state.entries[d]){ n++; d=addDays(d,-1); }
+  return n;
+}
+function renderStreakPill(){
+  const s = currentStreak();
+  const pill = document.getElementById('streakPill');
+  if(s>=2){ pill.style.display='inline-flex'; pill.textContent='🔥 連續 '+s+' 天'; }
+  else pill.style.display='none';
+}
+
+/* ═══════════════ 洞察 ═══════════════ */
+function lutealSymptomTop(){
+  const counts={};
+  Object.keys(state.entries).forEach(d=>{
+    const ci=cycleInfo(d); if(!ci) return;
+    const ph=phaseOf(ci.day, ci.len, state.settings.periodLen);
+    if(ph.key==='luteal') (state.entries[d].symptoms||[]).forEach(s=>counts[s]=(counts[s]||0)+1);
+  });
+  return Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,3);
+}
+function energyByPhase(){
+  const sum={menstrual:[0,0],follicular:[0,0],ovulation:[0,0],luteal:[0,0]};
+  Object.keys(state.entries).forEach(d=>{
+    const e=state.entries[d]; if(!e.energy) return;
+    const ci=cycleInfo(d); if(!ci) return;
+    const ph=phaseOf(ci.day, ci.len, state.settings.periodLen);
+    sum[ph.key][0]+=e.energy; sum[ph.key][1]++;
+  });
+  const out={};
+  Object.keys(sum).forEach(k=> out[k]= sum[k][1]? sum[k][0]/sum[k][1] : 0 );
+  return out;
+}
+function renderInsights(){
+  // 連續紀錄卡 + 徽章
+  const s = currentStreak();
+  if(s > (state.maxStreak||0)){ state.maxStreak=s; save(); }
+  const next = BADGES.find(b=>b.days>(state.maxStreak||0));
+  document.getElementById('streakCard').innerHTML = `
+    <h3><span class="h-dot" style="background:var(--butter)"></span>連續紀錄</h3>
+    <div style="display:flex;justify-content:space-between;align-items:baseline">
+      <span class="uc-big">${s} <span style="font-size:14px;font-family:var(--tc)">天</span></span>
+      <span class="empty-hint">最長紀錄 ${state.maxStreak||0} 天</span>
+    </div>
+    ${next?`<div class="progress-track"><div class="progress-fill" style="width:${Math.min(100,(s/next.days)*100)}%;background:var(--butter)"></div></div>
+    <div class="empty-hint" style="margin-top:6px">再 ${next.days-s>0?next.days-s:0} 天解鎖「${next.name}」</div>`:''}`;
+  renderMonth();
+  renderWall();
+
+  // 解鎖卡
+  const n = sortedStarts().length;
+  const unlocks = [
+    {need:1, title:'基本預測', dot:'var(--rose)', body:()=> {
+      return `平均週期 <span class="uc-big">${avgCycle()}</span> 天<br>下次經期預估：${niceDate(addDays(sortedStarts().slice(-1)[0], avgCycle()))}`;
+    }},
+    {need:3, title:'我的 PMS 模式', dot:'var(--lavender)', body:()=>{
+      const top = lutealSymptomTop();
+      if(!top.length) return '黃體期還沒有症狀紀錄——下個黃體期記得勾選症狀，模式就會浮現。';
+      return '你的黃體期最常出現：'+top.map(t=>`<span class="tag">${t[0]} ×${t[1]}</span>`).join(' ')+'<br><span class="empty-hint">知道它會來，就不會被它嚇到。</span>';
+    }},
+    {need:6, title:'精力高峰圖', dot:'var(--pistachio)', body:()=>{
+      const e = energyByPhase();
+      const names={menstrual:'經期',follicular:'濾泡',ovulation:'排卵',luteal:'黃體'};
+      const colors={menstrual:'var(--rose)',follicular:'var(--pistachio)',ovulation:'var(--butter)',luteal:'var(--lavender)'};
+      const max=Math.max(...Object.values(e),1);
+      let best='', bv=0; Object.keys(e).forEach(k=>{if(e[k]>bv){bv=e[k];best=k;}});
+      return `<div class="energy-bars">${Object.keys(e).map(k=>`
+        <div class="eb"><div class="eb-bar" style="height:${(e[k]/max)*100}%;background:${colors[k]}"></div>
+        <span class="eb-label">${names[k]}</span></div>`).join('')}</div>
+        ${bv?`<div class="empty-hint" style="margin-top:8px">你的精力高峰在「${names[best]}期」——重要的事排在這裡。</div>`:''}`;
+    }},
+    {need:12, title:'年度週期報告', dot:'var(--butter)', body:()=>{
+      const st=sortedStarts(); const diffs=[];
+      for(let i=1;i<st.length;i++) diffs.push(diffDays(st[i-1],st[i]));
+      const v=diffs.filter(d=>d>=15&&d<=60);
+      return `這一年你記下了 <b>${st.length}</b> 次週期、<b>${Object.keys(state.entries).length}</b> 篇日記。<br>
+        週期最短 ${Math.min(...v)} 天、最長 ${Math.max(...v)} 天、平均 ${avgCycle()} 天。<br>
+        <span class="empty-hint">一年份的自己，都在這裡了。</span>`;
+    }},
+  ];
+  document.getElementById('unlockList').innerHTML = unlocks.map((u, i)=>{
+    const ok = n>=u.need;
+    return `<div class="card unlock-card exp ${ok?'':'locked'} ${openState['u'+i]?'open':''}" data-k="u${i}">
+      <div class="exp-head">
+        <h3><span class="h-dot" style="background:${u.dot}"></span>${u.title}</h3>
+        <span class="exp-right"><span class="exp-status">${ok?'已解鎖 ✓':'🔒 '+n+' / '+u.need}</span><span class="chev-i">▾</span></span>
+      </div>
+      <div class="exp-body">
+        <div class="uc-req">紀錄 ${u.need} 個週期解鎖</div>
+        ${ok?`<div class="uc-body">${u.body()}</div>`
+            :`<div class="progress-track"><div class="progress-fill" style="width:${(n/u.need)*100}%"></div></div>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ═══════════════ 月報卡 ═══════════════ */
+let reportMonth = new Date(); reportMonth.setDate(1);
+function renderMonth(){
+  const y=reportMonth.getFullYear(), m=reportMonth.getMonth();
+  const prefix = y+'-'+String(m+1).padStart(2,'0');
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const dates = Object.keys(state.entries).filter(d=>d.startsWith(prefix));
+  const moods={}, syms={}; let eSum=0, eN=0;
+  const series = Array(daysInMonth).fill(null);
+  dates.forEach(d=>{
+    const e=state.entries[d];
+    if(e.mood) moods[e.mood]=(moods[e.mood]||0)+1;
+    (e.symptoms||[]).forEach(s=>syms[s]=(syms[s]||0)+1);
+    if(e.energy){ eSum+=e.energy; eN++; series[Number(d.slice(8))-1]=e.energy; }
+  });
+  const top = o=>{ const a=Object.entries(o).sort((x,b)=>b[1]-x[1]); return a.length?a[0][0]:'—'; };
+  const pStarts = state.starts.filter(d=>d.startsWith(prefix)).length;
+  // 精力折線（有紀錄的日子）
+  const pts=[];
+  series.forEach((v,i)=>{ if(v!=null) pts.push([ (i/Math.max(daysInMonth-1,1))*260+10, 50-((v-1)/4)*40 ]); });
+  let spark='';
+  if(pts.length>=2){
+    spark = '<svg viewBox="0 0 280 60" width="100%" height="60" style="margin-top:10px">'
+      + '<polyline fill="none" stroke="var(--pistachio)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="'
+      + pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ') + '"/>'
+      + pts.map(p=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3" fill="var(--pistachio)"/>`).join('')
+      + '</svg><div class="empty-hint" style="text-align:center">本月精力曲線</div>';
+  }
+  const mc = document.getElementById('monthCard');
+  mc.className = 'card exp' + (openState.month ? ' open' : '');
+  mc.dataset.k = 'month';
+  mc.innerHTML = `
+    <div class="exp-head">
+      <h3><span class="h-dot" style="background:var(--pistachio)"></span>本月報告</h3>
+      <span class="exp-right"><span class="exp-status">${y} 年 ${m+1} 月 · ${dates.length} 筆</span><span class="chev-i">▾</span></span>
+    </div>
+    <div class="exp-body">
+    <div class="month-nav">
+      <button id="mPrev" aria-label="上一月">◀</button>
+      <span class="mn-title">${y} 年 ${m+1} 月</span>
+      <button id="mNext" aria-label="下一月">▶</button>
+    </div>
+    <div class="month-stats">
+      <div class="ms"><b>${dates.length}</b><span>紀錄天數</span></div>
+      <div class="ms"><b>${eN?(eSum/eN).toFixed(1):'—'}</b><span>平均精力</span></div>
+      <div class="ms"><b>${pStarts}</b><span>經期開始</span></div>
+    </div>
+    <div class="month-stats" style="grid-template-columns:repeat(2,1fr)">
+      <div class="ms"><b style="font-size:15px;font-family:var(--tc)">${top(moods)}</b><span>最常心情</span></div>
+      <div class="ms"><b style="font-size:15px;font-family:var(--tc)">${top(syms)}</b><span>最常症狀</span></div>
+    </div>
+    ${spark}
+    </div>`;
+  document.getElementById('mPrev').addEventListener('click', ()=>{ reportMonth.setMonth(reportMonth.getMonth()-1); renderMonth(); });
+  document.getElementById('mNext').addEventListener('click', ()=>{ reportMonth.setMonth(reportMonth.getMonth()+1); renderMonth(); });
+}
+
+/* ═══════════════ 成就牆 ═══════════════ */
+function renderWall(){
+  const earned = Object.keys(state.achievements).length;
+  const tiers = ['堅持','里程','探索','彩蛋'];
+  let body = '';
+  tiers.forEach(t=>{
+    body += '<div class="wall-tier">'+t+'層</div><div class="wall-grid">';
+    ACH.filter(a=>a.tier===t).forEach(a=>{
+      const ok = !!state.achievements[a.id];
+      if(a.hidden && !ok) body += '<div class="ach hidden-egg"><span class="a-ico">❔</span>？？？</div>';
+      else body += `<div class="ach ${ok?'earned':''}" title="${a.desc}"><span class="a-ico">${a.ico}</span>${a.name}</div>`;
+    });
+    body += '</div>';
+  });
+  body += '<div class="empty-hint" style="margin-top:10px">彩蛋層的成就，要遇到了才知道是什麼 🎁</div>';
+  const wc = document.getElementById('wallCard');
+  wc.className = 'card exp' + (openState.wall ? ' open' : '');
+  wc.dataset.k = 'wall';
+  wc.innerHTML = `
+    <div class="exp-head">
+      <h3><span class="h-dot" style="background:var(--rose)"></span>成就牆</h3>
+      <span class="exp-right"><span class="exp-status">已解鎖 ${earned} / ${ACH.length}</span><span class="chev-i">▾</span></span>
+    </div>
+    <div class="exp-body">${body}</div>`;
+}
+
+/* ═══════════════ 設定 ═══════════════ */
+function renderSettings(){
+  document.getElementById('valCycleLen').textContent = state.settings.cycleLen;
+  document.getElementById('valPeriodLen').textContent = state.settings.periodLen;
+  document.getElementById('birthdayInput').value = state.settings.birthday || '';
+  const ps = persistGranted===true ? '🔒 永久儲存：已啟用，系統不會自動清除'
+           : persistGranted===false ? '永久儲存：此瀏覽器未授予，記得勤備份'
+           : '';
+  const bs = state.lastBackupDate
+    ? '上次備份：'+niceDate(state.lastBackupDate)+'（之後新增 '+(recordCount()-(state.lastBackupCount||0))+' 筆）'
+    : '還沒備份過——建議現在就匯出一次';
+  document.getElementById('dataStatus').innerHTML = (ps?ps+'<br>':'')+bs;
+  renderThemeChips();
+}
+document.getElementById('birthdayInput').addEventListener('change', (e)=>{
+  state.settings.birthday = e.target.value || null;
+  save(); checkAchievements(); renderSettings();
+});
+/* 外觀主題 */
+const THEMES = [['light','淺色'],['dark','深色'],['auto','自動']];
+function applyTheme(){
+  const t = state.settings.theme || 'light';
+  const sysDark = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches;
+  const dark = t==='dark' || (t==='auto' && sysDark);
+  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if(meta) meta.content = dark ? '#251D21' : '#F4ECEA';
+}
+function renderThemeChips(){
+  const box = document.getElementById('themeChips');
+  box.innerHTML = THEMES.map(([k,name])=>
+    `<button class="chip ${ (state.settings.theme||'light')===k?'on':'' }" data-th="${k}">${name}</button>`).join('');
+  box.querySelectorAll('.chip').forEach(b=>b.addEventListener('click', ()=>{
+    state.settings.theme = b.dataset.th;
+    save(); applyTheme(); renderThemeChips();
+  }));
+}
+if(window.matchMedia){
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ()=>{
+    if((state.settings.theme||'light')==='auto') applyTheme();
+  });
+}
+document.querySelectorAll('[data-step]').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    const [k, d] = b.dataset.step.split(':');
+    const lim = k==='cycleLen' ? [21,45] : [2,10];
+    state.settings[k] = Math.min(lim[1], Math.max(lim[0], state.settings[k]+Number(d)));
+    save(); renderSettings(); renderToday();
+  });
+});
+function doExport(){
+  state.lastBackupCount = recordCount();
+  state.lastBackupDate = todayStr();
+  save();
+  const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '月誌備份_'+todayStr()+'.json';
+  a.click();
+  if(!checkAchievements()) toast('已匯出備份 🛡️');
+  renderAll();
+}
+document.getElementById('btnExport').addEventListener('click', doExport);
+document.getElementById('backupNow').addEventListener('click', doExport);
+document.getElementById('btnImport').addEventListener('click', ()=>document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change', (ev)=>{
+  const f = ev.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ()=>{
+    try{
+      const s = JSON.parse(r.result);
+      if(!s.starts || !s.entries) throw 0;
+      state = Object.assign(DEF(), s);
+      state.settings = Object.assign(DEF().settings, s.settings||{});
+      state.hasImported = true;
+      save();
+      if(!checkAchievements()) toast('已匯入備份');
+      renderAll();
+    }catch(e){ toast('檔案格式不對，匯入失敗'); }
+  };
+  r.readAsText(f);
+  ev.target.value='';
+});
+document.getElementById('btnClear').addEventListener('click', ()=>{
+  if(confirm('確定要清除全部資料嗎？此動作無法復原。\n建議先「匯出備份」。')){
+    state = DEF();
+    save(); renderAll(); toast('資料已清除');
+  }
+});
+
+/* ═══════════════ 彈窗：經期開始 ═══════════════ */
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closeModal(b.dataset.close)));
+document.querySelectorAll('.modal-mask').forEach(m=>m.addEventListener('click',(e)=>{ if(e.target===m) m.classList.remove('open'); }));
+
+document.getElementById('btnPeriodStart').addEventListener('click', ()=>{
+  document.getElementById('periodDate').value = todayStr();
+  renderStartList();
+  openModal('modalPeriod');
+});
+function renderStartList(){
+  const box = document.getElementById('startList');
+  const st = sortedStarts().slice(-6).reverse();
+  box.innerHTML = st.length ? '<label style="font-size:12px;color:var(--ink-muted)">最近的紀錄</label>'+
+    st.map(s=>`<div class="sl-row"><span>${niceDate(s)}（${weekday(s)}）</span>
+      <button class="sl-del" data-del="${s}">刪除</button></div>`).join('') : '';
+  box.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{
+    state.starts = state.starts.filter(x=>x!==b.dataset.del);
+    save(); renderStartList(); renderAll();
+  }));
+}
+document.getElementById('savePeriod').addEventListener('click', ()=>{
+  const v = document.getElementById('periodDate').value;
+  if(!v){ toast('請選擇日期'); return; }
+  if(!state.starts.includes(v)) state.starts.push(v);
+  save(); closeModal('modalPeriod');
+  if(!checkAchievements()) toast('已紀錄經期開始 🌹');
+  renderAll();
+});
+
+/* ═══════════════ 彈窗：今日紀錄 ═══════════════ */
+let draft = {};
+function chipGroup(elId, options, selected, multi){
+  const box = document.getElementById(elId);
+  box.innerHTML = options.map(o=>`<button class="chip ${multi ? (selected.includes(o)?'on':'') : (selected===o?'on':'')}" data-v="${o}">${o}</button>`).join('');
+  box.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{
+    const v=c.dataset.v;
+    if(multi){
+      const i=draft.symptoms.indexOf(v);
+      i>=0 ? draft.symptoms.splice(i,1) : draft.symptoms.push(v);
+      chipGroup(elId, options, draft.symptoms, true);
+    }else{
+      if(elId==='flowChips') draft.flow = (draft.flow===v?null:v);
+      else draft.mood = (draft.mood===v?null:v);
+      chipGroup(elId, options, elId==='flowChips'?draft.flow:draft.mood, false);
+    }
+  }));
+}
+function renderEnergy(){
+  const box=document.getElementById('energyDots');
+  box.innerHTML=[1,2,3,4,5].map(n=>`<button class="${draft.energy>=n?'on':''}" data-e="${n}" aria-label="精力 ${n}">${n}</button>`).join('');
+  box.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+    const n=Number(b.dataset.e);
+    draft.energy = (draft.energy===n?0:n);
+    renderEnergy();
+  }));
+}
+document.getElementById('btnJournal').addEventListener('click', ()=>{
+  const e = state.entries[todayStr()] || {};
+  draft = { flow:e.flow||null, symptoms:[...(e.symptoms||[])], mood:e.mood||null, energy:e.energy||0, note:e.note||'' };
+  document.getElementById('journalTitle').textContent = niceDate(todayStr())+' 的紀錄';
+  chipGroup('flowChips', FLOWS, draft.flow, false);
+  chipGroup('symptomChips', SYMPTOMS, draft.symptoms, true);
+  chipGroup('moodChips', MOODS, draft.mood, false);
+  renderEnergy();
+  document.getElementById('noteInput').value = draft.note;
+  openModal('modalJournal');
+});
+document.getElementById('saveJournal').addEventListener('click', ()=>{
+  draft.note = document.getElementById('noteInput').value.trim();
+  const empty = !draft.flow && !draft.symptoms.length && !draft.mood && !draft.energy && !draft.note;
+  if(empty){ delete state.entries[todayStr()]; }
+  else state.entries[todayStr()] = {flow:draft.flow, symptoms:draft.symptoms, mood:draft.mood, energy:draft.energy, note:draft.note};
+  if(!empty){
+    const hr = new Date().getHours();
+    if(hr>=23) state.nightOwl = true;
+    if(hr<6) state.dawnBird = true;
+    const s = currentStreak();
+    if(s > (state.maxStreak||0)) state.maxStreak = s;
+  }
+  save(); closeModal('modalJournal');
+  if(!empty){
+    if(!checkAchievements()) toast('已儲存今日紀錄 ✨');
+  }
+  renderAll();
+});
+
+/* ═══════════════ 分頁切換 ═══════════════ */
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  b.classList.add('active');
+  document.getElementById('view-'+b.dataset.view).classList.add('active');
+  renderAll();
+}));
+
+/* ═══════════════ Toast 與啟動 ═══════════════ */
+let toastTimer;
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'), 2200);
+}
+function renderAll(){ renderToday(); renderRecords(); renderInsights(); renderSettings(); }
+applyTheme();
+renderAll();
+
+/* 永久儲存申請：跟系統說「這家店的東西別自動清」 */
+if(navigator.storage && navigator.storage.persist){
+  navigator.storage.persisted().then(already=>{
+    if(already){ persistGranted = true; renderSettings(); }
+    else navigator.storage.persist().then(g=>{ persistGranted = g; renderSettings(); });
+  });
+}
+
+/* Service Worker 註冊（讓 App 可離線、可安裝） */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+}
+</script>
+</body>
+</html>

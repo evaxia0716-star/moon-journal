@@ -1,0 +1,17 @@
+{
+  "name": "月誌 Moon Journal",
+  "short_name": "月誌",
+  "description": "只屬於你的週期日誌。資料只存在你的手機裡。",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F4ECEA",
+  "theme_color": "#F4ECEA",
+  "lang": "zh-TW",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
