@@ -2,14 +2,14 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>月誌</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>月記</title>
 <meta name="description" content="只屬於你的週期日誌。資料只存在你的手機裡。">
 <meta name="theme-color" content="#F4ECEA">
 <!-- iOS 安裝設定 -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="月誌">
+<meta name="apple-mobile-web-app-title" content="月記">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/png" href="icon-192.png">
@@ -39,13 +39,16 @@ html[data-theme="dark"]{
   --gold:#E0A287; --ring-track:#41343A; --danger:#E59AA0; --banner-text:#E8C9A0;
   --mem-grad:#3C2F37; --nav-bg:rgba(38,30,34,.92);
 }
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{height:100%}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:pan-x pan-y}
+html{-webkit-text-size-adjust:100%}
+html,body{height:100%; overscroll-behavior-y:none}
+button, nav, .chip, .exp-head, .cal-day, .ach{user-select:none; -webkit-user-select:none}
+img{-webkit-user-drag:none}
 body{
   font-family:var(--tc); background:var(--cream); color:var(--ink);
   font-size:clamp(14px, 3.6vw, 15.5px); line-height:1.7; letter-spacing:0.03em;
   line-break:strict; overflow-wrap:break-word;
-  padding-bottom:calc(72px + env(safe-area-inset-bottom));
+  padding-bottom:calc(124px + env(safe-area-inset-bottom));
   -webkit-font-smoothing:antialiased;
 }
 header{
@@ -204,7 +207,7 @@ nav button svg{width:21px; height:21px}
 .modal .field > label{display:block; font-size:13px; font-weight:600; color:var(--ink-muted); margin-bottom:7px; letter-spacing:0.08em}
 input[type=date], textarea{
   width:100%; border:1.5px solid var(--line); border-radius:14px;
-  padding:12px 14px; font-size:15px; font-family:var(--tc);
+  padding:12px 14px; font-size:16px; font-family:var(--tc);
   background:var(--card); color:var(--ink);
 }
 textarea{min-height:84px; resize:vertical}
@@ -242,6 +245,47 @@ input:focus, textarea:focus, .btn:focus-visible, nav button:focus-visible{outlin
 #toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
 .section-hint{font-size:clamp(11.5px, 3.2vw, 12.5px); color:var(--ink-muted); text-align:center; margin:4px 0 14px; letter-spacing:0.04em}
 
+/* ── v6：成就細節 ── */
+.a-date{font-size:9px; color:var(--ink-muted); opacity:.8}
+.ach.earned .a-date{color:#A07852}
+.a-prog{display:block; width:80%; height:3px; background:var(--line); border-radius:99px; overflow:hidden; margin-top:2px}
+.a-prog i{display:block; height:100%; background:var(--lavender); border-radius:99px}
+.a-num{font-size:9px; color:var(--ink-muted)}
+
+/* ── v6：私密鎖 ── */
+#lockScreen{position:fixed; inset:0; background:var(--cream); z-index:300; display:none;
+  flex-direction:column; align-items:center; justify-content:center; gap:16px;
+  padding-bottom:env(safe-area-inset-bottom)}
+.lock-logo{width:88px; height:auto}
+.lock-title{font-size:15px; letter-spacing:.1em; color:var(--ink)}
+.lock-dots{display:flex; gap:18px; height:14px}
+.lock-dots i{width:13px; height:13px; border-radius:50%; border:1.5px solid var(--rose); display:inline-block}
+.lock-dots i.f{background:var(--rose)}
+.lock-pad{display:grid; grid-template-columns:repeat(3,72px); gap:14px; margin-top:8px}
+.lock-pad button{width:72px; height:72px; border-radius:50%; border:none; background:var(--card);
+  font-size:24px; font-family:var(--num); color:var(--ink); cursor:pointer;
+  box-shadow:0 2px 10px rgba(166,90,100,.08)}
+.lock-pad button:active{background:var(--rose-soft)}
+.lock-forgot{border:none; background:none; color:var(--ink-muted); font-size:12.5px; margin-top:4px; font-family:var(--tc); cursor:pointer}
+.lock-shake{animation:lshake .35s}
+@keyframes lshake{0%,100%{transform:translateX(0)}25%{transform:translateX(-9px)}75%{transform:translateX(9px)}}
+
+/* ── v5：行事曆 ── */
+.cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-top:8px}
+.cal-w{text-align:center; font-size:10.5px; color:var(--ink-muted); padding:2px 0}
+.cal-day{aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  border-radius:10px; font-family:var(--num); font-size:clamp(11.5px,3vw,13px); color:var(--ink); gap:1px; position:relative}
+.cal-moon{position:absolute; top:1px; right:2px; font-size:8px; line-height:1}
+.cal-day.cd-period{background:var(--rose); color:#fff}
+.cal-day.cd-period .cal-dot{background:#fff}
+.cal-day.cd-pred{box-shadow:inset 0 0 0 1.5px var(--rose); color:var(--rose-text)}
+.cal-day.cd-today{outline:2px solid var(--gold); outline-offset:-2px; font-weight:600}
+.cal-dot{width:4px; height:4px; border-radius:50%; background:var(--lavender)}
+.cal-legend{display:flex; gap:16px; justify-content:center; margin-top:10px; font-size:11px; color:var(--ink-muted)}
+.cal-legend i{display:inline-block; width:9px; height:9px; border-radius:3px; margin-right:4px}
+.li-p{background:var(--rose)} .li-e{box-shadow:inset 0 0 0 1.5px var(--rose)}
+.li-d{background:var(--lavender); border-radius:50%; width:6px; height:6px; margin-bottom:1px}
+
 /* ── v4：可展開卡片 ── */
 .exp .exp-head{display:flex; justify-content:space-between; align-items:center; cursor:pointer; user-select:none; -webkit-user-select:none; gap:10px}
 .exp .exp-head h3{margin-bottom:0}
@@ -260,7 +304,7 @@ input:focus, textarea:focus, .btn:focus-visible, nav button:focus-visible{outlin
   display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px}
 .qian-back{transform:rotateY(180deg)}
 .qian-stick{font-size:30px}
-.qian-text{font-size:clamp(13.5px, 3.8vw, 15px); line-height:1.85; color:var(--ink); max-width:92%; padding:0 4px}
+.qian-text{font-size:clamp(13px, 3.6vw, 14.5px); line-height:1.85; color:var(--ink); max-width:100%; letter-spacing:0.01em}
 .qian-phase{font-size:11px; color:var(--ink-muted); letter-spacing:0.2em}
 .qian-btn{border:none; border-radius:99px; background:var(--lavender-soft); color:var(--lav-text);
   padding:10px 26px; font-size:clamp(13px, 3.6vw, 14px); font-weight:600; letter-spacing:0.06em; cursor:pointer; font-family:var(--tc); white-space:nowrap}
@@ -319,9 +363,9 @@ input:focus, textarea:focus, .btn:focus-visible, nav button:focus-visible{outlin
 
 <header>
   <div class="brand">
-    <img class="logo" src="logo-header.png" alt="月誌">
+    <img class="logo" src="logo-header.png" alt="月記">
     <div class="brand-text">
-      <h1>月誌</h1>
+      <h1>月記</h1>
       <span class="streak-pill" id="streakPill" style="display:none"></span>
     </div>
   </div>
@@ -371,6 +415,7 @@ input:focus, textarea:focus, .btn:focus-visible, nav button:focus-visible{outlin
 
   <!-- ════ 紀錄 ════ -->
   <section class="view" id="view-records">
+    <div class="card" id="calCard"></div>
     <p class="section-hint">所有紀錄，由近到遠</p>
     <div id="recordList"></div>
   </section>
@@ -405,12 +450,16 @@ input:focus, textarea:focus, .btn:focus-visible, nav button:focus-visible{outlin
         </div>
       </div>
       <div class="setting-row">
-        <label>生日<span class="sub">填了，才有機會遇到某個隱藏彩蛋 🎁</span></label>
+        <label>生日</label>
         <input type="date" id="birthdayInput" style="width:155px">
       </div>
       <div class="setting-row">
         <label>外觀<span class="sub">深色適合夜晚記錄；自動會跟著系統</span></label>
         <div class="chips c-lav" id="themeChips" style="flex:none"></div>
+      </div>
+      <div class="setting-row">
+        <label>私密鎖<span class="sub" id="pinStatus"></span></label>
+        <div style="display:flex;gap:8px" id="pinBtns"></div>
       </div>
     </div>
     <div class="card">
@@ -426,7 +475,7 @@ input:focus, textarea:focus, .btn:focus-visible, nav button:focus-visible{outlin
     <div class="card">
       <button class="btn btn-ghost danger" id="btnClear">清除全部資料</button>
     </div>
-    <p class="section-hint">月誌 v1.0 · 只屬於你的週期日誌</p>
+    <p class="section-hint">月記 · 只屬於妳的週期日誌</p>
   </section>
 </main>
 
@@ -496,6 +545,14 @@ input:focus, textarea:focus, .btn:focus-visible, nav button:focus-visible{outlin
   </div>
 </div>
 
+<div id="lockScreen">
+  <img src="logo-header.png" class="lock-logo" alt="">
+  <div class="lock-title" id="lockTitle">輸入密碼</div>
+  <div class="lock-dots" id="lockDots"></div>
+  <div class="lock-pad" id="lockPad"></div>
+  <button class="lock-forgot" id="lockForgot">忘記密碼？</button>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -508,17 +565,19 @@ const MOODS = ['平靜','開心','煩躁','低落','焦慮','敏感'];
 const BADGES = [
   {days:3,  ico:'🌱', name:'萌芽 3 天'},
   {days:7,  ico:'🌙', name:'滿週 7 天'},
+  {days:14, ico:'🌿', name:'半月 14 天'},
   {days:21, ico:'🌸', name:'習慣 21 天'},
   {days:66, ico:'🌕', name:'恆星 66 天'},
   {days:100,ico:'🌟', name:'恆心 100 天'},
+  {days:180,ico:'☀️', name:'半年 180 天'},
   {days:365,ico:'🌌', name:'一年的我'},
 ];
 
 const DEF = () => ({
   starts:[], entries:{},
-  settings:{cycleLen:28, periodLen:5, birthday:null, theme:'light'},
+  settings:{cycleLen:28, periodLen:5, birthday:null, theme:'light', pin:null},
   maxStreak:0, achievements:{}, lastBackupCount:0, lastBackupDate:null, nightOwl:false,
-  qian:null, qianCount:0, hasImported:false, dawnBird:false
+  qian:null, qianCount:0, hasImported:false, dawnBird:false, exportCount:0
 });
 let state = load();
 let persistGranted = null;   // 永久儲存狀態（稍後由系統回覆）
@@ -575,10 +634,10 @@ function cycleInfo(dateStr){
 }
 function phaseOf(day, len, periodLen){
   const ovu = Math.max(periodLen+2, len-14);          // 排卵中心日
-  if(day <= periodLen) return {key:'menstrual', name:'經期', color:'var(--rose)', tip:'好好休息，溫熱飲食，對自己溫柔一點'};
-  if(day >= ovu-1 && day <= ovu+1) return {key:'ovulation', name:'排卵期', color:'var(--butter)', tip:'精力與狀態的高峰，適合重要的事'};
-  if(day < ovu) return {key:'follicular', name:'濾泡期', color:'var(--pistachio)', tip:'能量回升中，適合啟動新計畫'};
-  return {key:'luteal', name:'黃體期', color:'var(--lavender)', tip:'步調放慢，留意 PMS，安排緩衝時間'};
+  if(day <= periodLen) return {key:'menstrual', name:'經期', color:'var(--rose)', tip:'好好休息，對自己溫柔一點'};
+  if(day >= ovu-1 && day <= ovu+1) return {key:'ovulation', name:'排卵期', color:'var(--butter)', tip:'精力高峰，適合重要的事'};
+  if(day < ovu) return {key:'follicular', name:'濾泡期', color:'var(--pistachio)', tip:'能量回升，適合啟動新計畫'};
+  return {key:'luteal', name:'黃體期', color:'var(--lavender)', tip:'放慢步調，多給自己緩衝'};
 }
 
 /* ═══════════════ 成就系統 ═══════════════ */
@@ -733,14 +792,13 @@ function drawQian(){
 function renderQian(){
   const card = document.getElementById('qianCard');
   const drawn = state.qian && state.qian.date === todayStr();
-  const phName = {menstrual:'靜潮',follicular:'萌芽',ovulation:'滿潮',luteal:'潮退',any:'月之'};
   card.innerHTML = `<div class="qian-inner ${drawn?'flipped':''}" id="qianInner">
     <div class="qian-face qian-front">
       <span class="qian-stick">🎴</span>
-      <button class="qian-btn" id="qianDraw">抽一支今日的月之籤</button>
+      <button class="qian-btn" id="qianDraw">抽一支今日之籤</button>
     </div>
     <div class="qian-face qian-back">
-      <span class="qian-phase">${drawn?phName[state.qian.key]+'之籤':''}</span>
+      <span class="qian-phase">${drawn?'今日之籤':''}</span>
       <div class="qian-text">${drawn?state.qian.text:''}</div>
     </div>
   </div>`;
@@ -749,8 +807,7 @@ function renderQian(){
 }
 function renderQian2(){ // 抽完後補上籤文再翻面
   const card = document.getElementById('qianCard');
-  const phName = {menstrual:'靜潮',follicular:'萌芽',ovulation:'滿潮',luteal:'潮退',any:'月之'};
-  card.querySelector('.qian-back .qian-phase').textContent = phName[state.qian.key]+'之籤';
+  card.querySelector('.qian-back .qian-phase').textContent = '今日之籤';
   card.querySelector('.qian-back .qian-text').textContent = state.qian.text;
   card.querySelector('.qian-inner').classList.add('flipped');
 }
@@ -782,6 +839,7 @@ const ACH = [
   {id:'c6',  tier:'里程', ico:'🌔', name:'盈凸',     desc:'累積 6 個週期',   test:()=>sortedStarts().length>=6},
   {id:'c12', tier:'里程', ico:'🌕', name:'圓滿一年', desc:'累積 12 個週期',  test:()=>sortedStarts().length>=12},
   {id:'c24', tier:'里程', ico:'🌖', name:'兩年同行', desc:'累積 24 個週期',  test:()=>sortedStarts().length>=24},
+  {id:'c36', tier:'里程', ico:'🌗', name:'三年同行', desc:'累積 36 個週期',  test:()=>sortedStarts().length>=36},
   // 探索層（第一次做某件好事）
   {id:'e_note',   tier:'探索', ico:'✍️', name:'心裡話',     desc:'寫下第一篇自由筆記',
     test:()=>Object.values(state.entries).some(e=>e.note)},
@@ -820,6 +878,22 @@ const ACH = [
       Object.values(state.entries).forEach(e=>{ if(e.mood) seen[e.mood]=1; });
       return Object.keys(seen).length>=MOODS.length;
     }},
+  {id:'e_200',    tier:'探索', ico:'📖', name:'兩百篇',     desc:'累積 200 篇日記',
+    test:()=>Object.keys(state.entries).length>=200},
+  {id:'e_qian100',tier:'探索', ico:'🏮', name:'籤緣百日',   desc:'累積抽籤 100 次',
+    test:()=>(state.qianCount||0)>=100},
+  {id:'e_export3',tier:'探索', ico:'🧰', name:'備份習慣',   desc:'累積匯出備份 3 次',
+    test:()=>(state.exportCount||0)>=3},
+  {id:'e_fullweek',tier:'探索', ico:'🗓️', name:'完整一週',  desc:'連續七天每天寫筆記',
+    test:()=>{
+      const ds = Object.keys(state.entries).filter(d=>state.entries[d].note).sort();
+      let run = 1;
+      for(let i=1;i<ds.length;i++){
+        run = (diffDays(ds[i-1], ds[i])===1) ? run+1 : 1;
+        if(run>=7) return true;
+      }
+      return false;
+    }},
   // 彩蛋層（達成前只顯示 ？？？）
   {id:'x_fullmoon', tier:'彩蛋', ico:'🌝', name:'與月同步', desc:'在滿月之夜寫下紀錄', hidden:true,
     test:()=>Object.keys(state.entries).some(d=>isFullMoon(parse(d)))},
@@ -842,6 +916,21 @@ const ACH = [
     test:()=>Object.values(state.entries).some(e=>(e.note||'').length>=150)},
   {id:'x_lucky',    tier:'彩蛋', ico:'🍀', name:'第 77 篇', desc:'寫下第 77 篇日記', hidden:true,
     test:()=>Object.keys(state.entries).length>=77},
+  {id:'x_valentine',tier:'彩蛋', ico:'💌', name:'心動之日', desc:'在 2 月 14 日寫下紀錄', hidden:true,
+    test:()=>Object.keys(state.entries).some(d=>d.slice(5)==='02-14')},
+  {id:'x_solstice', tier:'彩蛋', ico:'🌃', name:'最長的夜', desc:'在冬至寫下紀錄', hidden:true,
+    test:()=>Object.keys(state.entries).some(d=>['12-21','12-22'].includes(d.slice(5)))},
+  {id:'x_comeback', tier:'彩蛋', ico:'🕊️', name:'回來就好', desc:'中斷後，又連續紀錄滿七天', hidden:true,
+    test:()=>{
+      const ds = Object.keys(state.entries).sort();
+      if(ds.length<14) return false;
+      let runs = 0, run = 1;
+      for(let i=1;i<=ds.length;i++){
+        if(i<ds.length && diffDays(ds[i-1], ds[i])===1) run++;
+        else { if(run>=7) runs++; run = 1; }
+      }
+      return runs>=2;
+    }},
 ];
 function checkAchievements(){
   const newly=[];
@@ -871,7 +960,7 @@ function drawRing(){
     svg.innerHTML = html;
     center.innerHTML = `<div class="cd-label">Moon Journal</div>
       <div class="cd-num" style="font-size:34px">○</div>
-      <div class="phase-tip">等待第一筆紀錄<br>點「紀錄經期開始」開始你的月誌</div>`;
+      <div class="phase-tip">等待第一筆紀錄<br>點「紀錄經期開始」開始妳的月記</div>`;
     return;
   }
   const len = info.len, pl = Math.min(state.settings.periodLen, len-4);
@@ -979,6 +1068,7 @@ function esc(s){ const d=document.createElement('div'); d.textContent=s; return 
 
 /* ═══════════════ 紀錄列表 ═══════════════ */
 function renderRecords(){
+  renderCalendar();
   const list = document.getElementById('recordList');
   const items = [];
   sortedStarts().forEach(s=>items.push({date:s, type:'period'}));
@@ -1002,6 +1092,53 @@ function renderRecords(){
       <span class="rec-date">${niceDate(it.date)}</span><span class="rec-cd">${cd}</span></div>
       ${tags}${e.note?`<div class="rec-note">${esc(e.note)}</div>`:''}</div>`;
   }).join('');
+}
+
+/* ═══════════════ 行事曆 ═══════════════ */
+let calMonth = new Date(); calMonth.setDate(1);
+function renderCalendar(){
+  const y = calMonth.getFullYear(), m = calMonth.getMonth();
+  const startDow = new Date(y, m, 1).getDay();
+  const dim = new Date(y, m+1, 0).getDate();
+  const t = todayStr();
+  // 實際經期日（每次開始日往後推經期長度）
+  const pset = new Set();
+  sortedStarts().forEach(s=>{ for(let i=0;i<state.settings.periodLen;i++) pset.add(addDays(s,i)); });
+  // 預估下次經期日
+  const eset = new Set();
+  const st = sortedStarts();
+  if(st.length){
+    const nx = addDays(st[st.length-1], avgCycle());
+    for(let i=0;i<state.settings.periodLen;i++) eset.add(addDays(nx,i));
+  }
+  let cells = '';
+  ['日','一','二','三','四','五','六'].forEach(w=>cells+=`<div class="cal-w">${w}</div>`);
+  for(let i=0;i<startDow;i++) cells += '<div></div>';
+  for(let d=1; d<=dim; d++){
+    const ds = y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const cls = ['cal-day'];
+    if(pset.has(ds)) cls.push('cd-period');
+    else if(eset.has(ds)) cls.push('cd-pred');
+    if(ds===t) cls.push('cd-today');
+    const dot = state.entries[ds] ? '<span class="cal-dot"></span>' : '<span class="cal-dot" style="opacity:0"></span>';
+    const dObj = parse(ds);
+    const moon = isFullMoon(dObj) ? '🌕' : (isNewMoon(dObj) ? '🌑' : '');
+    cells += `<div class="${cls.join(' ')}">${moon?`<span class="cal-moon">${moon}</span>`:''}${d}${dot}</div>`;
+  }
+  document.getElementById('calCard').innerHTML = `
+    <div class="month-nav">
+      <button id="cPrev" aria-label="上一月">◀</button>
+      <span class="mn-title">${y} 年 ${m+1} 月</span>
+      <button id="cNext" aria-label="下一月">▶</button>
+    </div>
+    <div class="cal-grid">${cells}</div>
+    <div class="cal-legend">
+      <span><i class="li-p"></i>經期</span>
+      <span><i class="li-e"></i>預估</span>
+      <span><i class="li-d"></i>有紀錄</span>
+    </div>`;
+  document.getElementById('cPrev').addEventListener('click', ()=>{ calMonth.setMonth(calMonth.getMonth()-1); renderCalendar(); });
+  document.getElementById('cNext').addEventListener('click', ()=>{ calMonth.setMonth(calMonth.getMonth()+1); renderCalendar(); });
 }
 
 /* ═══════════════ 連續紀錄與徽章 ═══════════════ */
@@ -1105,13 +1242,12 @@ function renderInsights(){
 
 /* ═══════════════ 月報卡 ═══════════════ */
 let reportMonth = new Date(); reportMonth.setDate(1);
-function renderMonth(){
-  const y=reportMonth.getFullYear(), m=reportMonth.getMonth();
+function monthStats(y, m){
   const prefix = y+'-'+String(m+1).padStart(2,'0');
-  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const dim = new Date(y, m+1, 0).getDate();
   const dates = Object.keys(state.entries).filter(d=>d.startsWith(prefix));
   const moods={}, syms={}; let eSum=0, eN=0;
-  const series = Array(daysInMonth).fill(null);
+  const series = Array(dim).fill(null);
   dates.forEach(d=>{
     const e=state.entries[d];
     if(e.mood) moods[e.mood]=(moods[e.mood]||0)+1;
@@ -1119,11 +1255,18 @@ function renderMonth(){
     if(e.energy){ eSum+=e.energy; eN++; series[Number(d.slice(8))-1]=e.energy; }
   });
   const top = o=>{ const a=Object.entries(o).sort((x,b)=>b[1]-x[1]); return a.length?a[0][0]:'—'; };
-  const pStarts = state.starts.filter(d=>d.startsWith(prefix)).length;
-  // 精力折線（有紀錄的日子）
-  const pts=[];
-  series.forEach((v,i)=>{ if(v!=null) pts.push([ (i/Math.max(daysInMonth-1,1))*260+10, 50-((v-1)/4)*40 ]); });
-  let spark='';
+  return {
+    days: dates.length, eSum, eN, dim, series,
+    pStarts: state.starts.filter(d=>d.startsWith(prefix)).length,
+    topMood: top(moods), topSym: top(syms),
+  };
+}
+function renderMonth(){
+  const y = reportMonth.getFullYear(), m = reportMonth.getMonth();
+  const s = monthStats(y, m);
+  const pts = [];
+  s.series.forEach((v,i)=>{ if(v!=null) pts.push([ (i/Math.max(s.dim-1,1))*260+10, 50-((v-1)/4)*40 ]); });
+  let spark = '';
   if(pts.length>=2){
     spark = '<svg viewBox="0 0 280 60" width="100%" height="60" style="margin-top:10px">'
       + '<polyline fill="none" stroke="var(--pistachio)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="'
@@ -1137,7 +1280,7 @@ function renderMonth(){
   mc.innerHTML = `
     <div class="exp-head">
       <h3><span class="h-dot" style="background:var(--pistachio)"></span>本月報告</h3>
-      <span class="exp-right"><span class="exp-status">${y} 年 ${m+1} 月 · ${dates.length} 筆</span><span class="chev-i">▾</span></span>
+      <span class="exp-right"><span class="exp-status">${y} 年 ${m+1} 月 · ${s.days} 筆</span><span class="chev-i">▾</span></span>
     </div>
     <div class="exp-body">
     <div class="month-nav">
@@ -1146,21 +1289,123 @@ function renderMonth(){
       <button id="mNext" aria-label="下一月">▶</button>
     </div>
     <div class="month-stats">
-      <div class="ms"><b>${dates.length}</b><span>紀錄天數</span></div>
-      <div class="ms"><b>${eN?(eSum/eN).toFixed(1):'—'}</b><span>平均精力</span></div>
-      <div class="ms"><b>${pStarts}</b><span>經期開始</span></div>
+      <div class="ms"><b>${s.days}</b><span>紀錄天數</span></div>
+      <div class="ms"><b>${s.eN?(s.eSum/s.eN).toFixed(1):'—'}</b><span>平均精力</span></div>
+      <div class="ms"><b>${s.pStarts}</b><span>經期開始</span></div>
     </div>
     <div class="month-stats" style="grid-template-columns:repeat(2,1fr)">
-      <div class="ms"><b style="font-size:15px;font-family:var(--tc)">${top(moods)}</b><span>最常心情</span></div>
-      <div class="ms"><b style="font-size:15px;font-family:var(--tc)">${top(syms)}</b><span>最常症狀</span></div>
+      <div class="ms"><b style="font-size:15px;font-family:var(--tc)">${s.topMood}</b><span>最常心情</span></div>
+      <div class="ms"><b style="font-size:15px;font-family:var(--tc)">${s.topSym}</b><span>最常症狀</span></div>
     </div>
     ${spark}
+    <button class="btn btn-soft" id="btnShareMonth" style="margin-top:14px">分享月報卡</button>
     </div>`;
   document.getElementById('mPrev').addEventListener('click', ()=>{ reportMonth.setMonth(reportMonth.getMonth()-1); renderMonth(); });
   document.getElementById('mNext').addEventListener('click', ()=>{ reportMonth.setMonth(reportMonth.getMonth()+1); renderMonth(); });
+  document.getElementById('btnShareMonth').addEventListener('click', shareMonthCard);
+}
+
+/* ═══════════════ 月報分享卡（Canvas 生成圖片）═══════════════ */
+function rr(x, a, b, w, h, r){
+  x.beginPath();
+  x.moveTo(a+r, b);
+  x.arcTo(a+w, b, a+w, b+h, r); x.arcTo(a+w, b+h, a, b+h, r);
+  x.arcTo(a, b+h, a, b, r);     x.arcTo(a, b, a+w, b, r);
+  x.closePath();
+}
+async function shareMonthCard(){
+  const y = reportMonth.getFullYear(), m = reportMonth.getMonth();
+  const s = monthStats(y, m);
+  const W = 1080, H = 1350;
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const x = cv.getContext('2d');
+  const TC = '"PingFang TC","Noto Sans TC",sans-serif';
+  // 底與卡片
+  x.fillStyle = '#F4ECEA'; x.fillRect(0, 0, W, H);
+  x.fillStyle = '#FAF4F2'; rr(x, 60, 60, W-120, H-120, 48); x.fill();
+  // LOGO
+  try{
+    const img = new Image(); img.src = 'logo-header.png';
+    await img.decode();
+    x.drawImage(img, W/2-95, 115, 190, 190);
+  }catch(e){}
+  x.textAlign = 'center';
+  // 標題
+  x.fillStyle = '#4D3F42'; x.font = '600 58px '+TC;
+  x.fillText('月記 · '+y+' 年 '+(m+1)+' 月', W/2, 400);
+  // 三大數字
+  [[s.days,'紀錄天數'], [s.eN?(s.eSum/s.eN).toFixed(1):'—','平均精力'], [s.pStarts,'經期開始']].forEach((cd, i)=>{
+    const cx = W/2 + (i-1)*290;
+    x.fillStyle = '#C66E78'; x.font = '300 100px "Jost","Avenir Next",sans-serif';
+    x.fillText(String(cd[0]), cx, 580);
+    x.fillStyle = '#9C8B8E'; x.font = '30px '+TC;
+    x.fillText(cd[1], cx, 632);
+  });
+  // 心情／症狀
+  x.fillStyle = '#4D3F42'; x.font = '36px '+TC;
+  x.fillText('最常心情：'+s.topMood+'　　最常症狀：'+s.topSym, W/2, 740);
+  // 精力曲線
+  const pts = [];
+  s.series.forEach((v,i)=>{ if(v!=null) pts.push([150+(i/Math.max(s.dim-1,1))*780, 1010-((v-1)/4)*170]); });
+  if(pts.length>=2){
+    x.strokeStyle = '#C99A9D'; x.lineWidth = 7; x.lineJoin = 'round'; x.lineCap = 'round';
+    x.beginPath(); pts.forEach((p,i)=> i ? x.lineTo(p[0],p[1]) : x.moveTo(p[0],p[1])); x.stroke();
+    x.fillStyle = '#C99A9D';
+    pts.forEach(p=>{ x.beginPath(); x.arc(p[0], p[1], 10, 0, 7); x.fill(); });
+    x.fillStyle = '#9C8B8E'; x.font = '28px '+TC;
+    x.fillText('本月精力曲線', W/2, 1085);
+  }
+  // 落款
+  x.fillStyle = '#9C8B8E'; x.font = '27px '+TC;
+  x.fillText('Moon Journal · 只屬於妳的週期日誌', W/2, H-125);
+  // 輸出與分享（與備份同樣的三層保險）
+  cv.toBlob(async (blob)=>{
+    if(!blob){ toast('圖片生成失敗'); return; }
+    const fname = '月記月報_'+y+'-'+String(m+1).padStart(2,'0')+'.png';
+    const file = new File([blob], fname, {type:'image/png'});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      try{ await navigator.share({files:[file], title:'月記月報'}); return; }
+      catch(e){ if(e && e.name==='AbortError') return; }
+    }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = fname;
+    document.body.appendChild(a); a.click(); a.remove();
+    toast('月報卡已下載');
+  }, 'image/png');
 }
 
 /* ═══════════════ 成就牆 ═══════════════ */
+function progFor(a){
+  const ms = state.maxStreak||0, st = sortedStarts().length;
+  const en = Object.keys(state.entries).length, q = state.qianCount||0;
+  const fix = {
+    e_50:[en,50], e_100:[en,100], e_200:[en,200],
+    e_qian30:[q,30], e_qian100:[q,100],
+    e_export3:[state.exportCount||0,3],
+  };
+  if(a.id in fix) return fix[a.id];
+  if(/^s\d+$/.test(a.id)) return [ms, Number(a.id.slice(1))];
+  if(/^c\d+$/.test(a.id)) return [st, Number(a.id.slice(1))];
+  if(a.id==='e_symall'){
+    const seen={}; Object.values(state.entries).forEach(e=>(e.symptoms||[]).forEach(x=>seen[x]=1));
+    return [Object.keys(seen).length, SYMPTOMS.length];
+  }
+  if(a.id==='e_moodall'){
+    const seen={}; Object.values(state.entries).forEach(e=>{ if(e.mood) seen[e.mood]=1; });
+    return [Object.keys(seen).length, MOODS.length];
+  }
+  if(a.id==='e_fullweek'){
+    const ds = Object.keys(state.entries).filter(d=>state.entries[d].note).sort();
+    let best = ds.length ? 1 : 0, run = 1;
+    for(let i=1;i<ds.length;i++){
+      run = (diffDays(ds[i-1], ds[i])===1) ? run+1 : 1;
+      if(run>best) best = run;
+    }
+    return [Math.min(best,7), 7];
+  }
+  return null;
+}
+function shortDate(s){ return s.slice(0,4)+'.'+Number(s.slice(5,7))+'.'+Number(s.slice(8)); }
 function renderWall(){
   const earned = Object.keys(state.achievements).length;
   const tiers = ['堅持','里程','探索','彩蛋'];
@@ -1169,12 +1414,21 @@ function renderWall(){
     body += '<div class="wall-tier">'+t+'層</div><div class="wall-grid">';
     ACH.filter(a=>a.tier===t).forEach(a=>{
       const ok = !!state.achievements[a.id];
-      if(a.hidden && !ok) body += '<div class="ach hidden-egg"><span class="a-ico">❔</span>？？？</div>';
-      else body += `<div class="ach ${ok?'earned':''}" title="${a.desc}"><span class="a-ico">${a.ico}</span>${a.name}</div>`;
+      if(a.hidden && !ok){ body += '<div class="ach hidden-egg"><span class="a-ico">❔</span>？？？</div>'; return; }
+      let extra = '';
+      if(ok){
+        extra = `<span class="a-date">${shortDate(state.achievements[a.id])}</span>`;
+      } else {
+        const p = progFor(a);
+        if(p){
+          const cur = Math.min(p[0], p[1]);
+          extra = `<span class="a-prog"><i style="width:${(cur/p[1])*100}%"></i></span><span class="a-num">${cur} / ${p[1]}</span>`;
+        }
+      }
+      body += `<div class="ach ${ok?'earned':''}" title="${a.desc}"><span class="a-ico">${a.ico}</span>${a.name}${extra}</div>`;
     });
     body += '</div>';
   });
-  body += '<div class="empty-hint" style="margin-top:10px">彩蛋層的成就，要遇到了才知道是什麼 🎁</div>';
   const wc = document.getElementById('wallCard');
   wc.className = 'card exp' + (openState.wall ? ' open' : '');
   wc.dataset.k = 'wall';
@@ -1199,6 +1453,18 @@ function renderSettings(){
     : '還沒備份過——建議現在就匯出一次';
   document.getElementById('dataStatus').innerHTML = (ps?ps+'<br>':'')+bs;
   renderThemeChips();
+  // 私密鎖
+  const pb = document.getElementById('pinBtns');
+  if(state.settings.pin){
+    document.getElementById('pinStatus').textContent = '已開啟';
+    pb.innerHTML = '<button class="chip on" id="pinChange">變更</button><button class="chip" id="pinOff">關閉</button>';
+    document.getElementById('pinChange').addEventListener('click', ()=>showLock('verify-change'));
+    document.getElementById('pinOff').addEventListener('click', ()=>showLock('verify-off'));
+  } else {
+    document.getElementById('pinStatus').textContent = '未開啟';
+    pb.innerHTML = '<button class="chip" id="pinSet">設定密碼</button>';
+    document.getElementById('pinSet').addEventListener('click', ()=>showLock('set1'));
+  }
 }
 document.getElementById('birthdayInput').addEventListener('change', (e)=>{
   state.settings.birthday = e.target.value || null;
@@ -1236,16 +1502,39 @@ document.querySelectorAll('[data-step]').forEach(b=>{
     save(); renderSettings(); renderToday();
   });
 });
-function doExport(){
+async function doExport(){
   state.lastBackupCount = recordCount();
   state.lastBackupDate = todayStr();
+  state.exportCount = (state.exportCount||0) + 1;
   save();
-  const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = '月誌備份_'+todayStr()+'.json';
-  a.click();
-  if(!checkAchievements()) toast('已匯出備份 🛡️');
+  const json = JSON.stringify(state, null, 2);
+  const fname = '月記備份_'+todayStr()+'.json';
+  let done = false;
+  // 第一層：系統分享面板（iOS 最穩，可存到「檔案」或傳 LINE）
+  if(navigator.canShare){
+    try{
+      const file = new File([json], fname, {type:'application/json'});
+      if(navigator.canShare({files:[file]})){
+        await navigator.share({files:[file], title:'月記備份'});
+        done = true;
+      }
+    }catch(e){ if(e && e.name==='AbortError') done = true; }
+  }
+  // 第二層：傳統下載（Android Chrome）
+  if(!done){
+    try{
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([json], {type:'application/json'}));
+      a.download = fname;
+      document.body.appendChild(a); a.click(); a.remove();
+      done = true;
+    }catch(e){}
+  }
+  // 第三層：複製到剪貼簿
+  if(!done && navigator.clipboard){
+    try{ await navigator.clipboard.writeText(json); toast('已複製備份內容，請貼到記事本保存'); done = true; }catch(e){}
+  }
+  if(!checkAchievements()) toast('備份已匯出 🛡️');
   renderAll();
 }
 document.getElementById('btnExport').addEventListener('click', doExport);
@@ -1257,7 +1546,7 @@ document.getElementById('importFile').addEventListener('change', (ev)=>{
   r.onload = ()=>{
     try{
       const s = JSON.parse(r.result);
-      if(!s.starts || !s.entries) throw 0;
+      if(!Array.isArray(s.starts) || typeof s.entries !== 'object' || s.entries === null) throw 0;
       state = Object.assign(DEF(), s);
       state.settings = Object.assign(DEF().settings, s.settings||{});
       state.hasImported = true;
@@ -1384,6 +1673,74 @@ function toast(msg){
 function renderAll(){ renderToday(); renderRecords(); renderInsights(); renderSettings(); }
 applyTheme();
 renderAll();
+if(state.settings.pin) showLock('unlock');
+
+/* ═══════════════ 私密鎖 ═══════════════ */
+let lockMode = 'unlock', lockBuf = '', lockTemp = '';
+function lockRender(){
+  document.getElementById('lockDots').innerHTML =
+    [0,1,2,3].map(i=>`<i class="${i<lockBuf.length?'f':''}"></i>`).join('');
+}
+function showLock(mode){
+  lockMode = mode; lockBuf = ''; lockTemp = '';
+  const titles = {unlock:'輸入密碼', set1:'設定四位數密碼', set2:'再輸入一次確認',
+                  'verify-change':'輸入目前密碼', 'verify-off':'輸入密碼以關閉'};
+  document.getElementById('lockTitle').textContent = titles[mode];
+  document.getElementById('lockForgot').style.display = mode==='unlock' ? '' : 'none';
+  const pad = document.getElementById('lockPad');
+  if(!pad.children.length){
+    pad.innerHTML = [1,2,3,4,5,6,7,8,9,'',0,'⌫'].map(k=>
+      k===''?'<span></span>':`<button data-k="${k}">${k}</button>`).join('');
+    pad.querySelectorAll('button').forEach(b=>b.addEventListener('click', ()=>lockKey(b.dataset.k)));
+  }
+  lockRender();
+  document.getElementById('lockScreen').style.display = 'flex';
+}
+function hideLock(){ document.getElementById('lockScreen').style.display = 'none'; }
+function lockFail(){
+  const el = document.getElementById('lockDots');
+  el.classList.add('lock-shake');
+  setTimeout(()=>el.classList.remove('lock-shake'), 400);
+  lockBuf = ''; lockRender();
+}
+function lockKey(k){
+  if(k==='⌫'){ lockBuf = lockBuf.slice(0,-1); lockRender(); return; }
+  if(lockBuf.length>=4) return;
+  lockBuf += k; lockRender();
+  if(lockBuf.length<4) return;
+  const pin = state.settings.pin;
+  if(lockMode==='unlock'){
+    lockBuf===pin ? hideLock() : lockFail();
+  } else if(lockMode==='set1'){
+    lockTemp = lockBuf; lockBuf = ''; lockMode = 'set2';
+    document.getElementById('lockTitle').textContent = '再輸入一次確認';
+    lockRender();
+  } else if(lockMode==='set2'){
+    if(lockBuf===lockTemp){
+      state.settings.pin = lockBuf; save(); hideLock();
+      toast('私密鎖已開啟 🔒'); renderSettings();
+    } else {
+      lockMode = 'set1'; lockTemp = '';
+      document.getElementById('lockTitle').textContent = '兩次不一致，重新設定';
+      lockFail();
+    }
+  } else if(lockMode==='verify-change'){
+    lockBuf===pin ? showLock('set1') : lockFail();
+  } else if(lockMode==='verify-off'){
+    if(lockBuf===pin){
+      state.settings.pin = null; save(); hideLock();
+      toast('私密鎖已關閉'); renderSettings();
+    } else lockFail();
+  }
+}
+document.getElementById('lockForgot').addEventListener('click', ()=>{
+  if(confirm('忘記密碼只能清除全部資料、重新開始（這是為了保護妳的隱私）。\n確定要清除嗎？')){
+    state = DEF(); save(); hideLock(); applyTheme(); renderAll(); toast('資料已清除');
+  }
+});
+
+/* 鎖定縮放：攔截 iOS 捏合手勢（雙擊放大由 CSS touch-action 處理） */
+document.addEventListener('gesturestart', (e)=>e.preventDefault());
 
 /* 永久儲存申請：跟系統說「這家店的東西別自動清」 */
 if(navigator.storage && navigator.storage.persist){

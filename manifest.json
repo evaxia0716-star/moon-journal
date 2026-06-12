@@ -1,7 +1,7 @@
 {
-  "name": "月誌 Moon Journal",
-  "short_name": "月誌",
-  "description": "只屬於你的週期日誌。資料只存在你的手機裡。",
+  "name": "月記 Moon Journal",
+  "short_name": "月記",
+  "description": "只屬於妳的週期日誌。資料只存在你的手機裡。",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
