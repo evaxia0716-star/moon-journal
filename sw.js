@@ -1,5 +1,5 @@
 /* 月誌 Service Worker — 駐店店員：把 App 存一份在手機裡，沒網路也能開 */
-const CACHE_NAME = 'moon-journal-v13';
+const CACHE_NAME = 'moon-journal-v14';
 const ASSETS = [
   './',
   './index.html',
