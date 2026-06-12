@@ -198,16 +198,17 @@ nav button svg{width:21px; height:21px}
 .modal-mask.open{display:flex}
 .modal{
   background:var(--cream); width:100%; max-width:480px;
-  border-radius:24px 24px 0 0; padding:22px 22px calc(22px + env(safe-area-inset-bottom));
-  max-height:86vh; overflow-y:auto; animation:slideUp .3s ease;
+  border-radius:22px 22px 0 0; padding:18px 18px calc(16px + env(safe-area-inset-bottom));
+  max-height:82vh; overflow-y:auto; animation:slideUp .3s ease;
 }
+.modal .btn{padding:12px; font-size:14px}
 @keyframes slideUp{from{transform:translateY(40px); opacity:0}to{transform:none; opacity:1}}
-.modal h2{font-size:17px; font-weight:600; letter-spacing:0.1em; margin-bottom:14px}
-.modal .field{margin-bottom:16px}
+.modal h2{font-size:16px; font-weight:600; letter-spacing:0.08em; margin-bottom:10px}
+.modal .field{margin-bottom:12px}
 .modal .field > label{display:block; font-size:13px; font-weight:600; color:var(--ink-muted); margin-bottom:7px; letter-spacing:0.08em}
 input[type=date], textarea{
-  width:100%; border:1.5px solid var(--line); border-radius:14px;
-  padding:12px 14px; font-size:16px; font-family:var(--tc);
+  width:100%; border:1.5px solid var(--line); border-radius:12px;
+  padding:10px 12px; font-size:16px; font-family:var(--tc);
   background:var(--card); color:var(--ink);
 }
 textarea{min-height:84px; resize:vertical}
@@ -227,10 +228,10 @@ input:focus, textarea:focus, .btn:focus-visible, nav button:focus-visible{outlin
   background:var(--card); cursor:pointer; font-family:var(--num); font-size:15px; color:var(--ink-muted);
 }
 .energy-dots button.on{background:var(--pistachio); border-color:var(--pistachio); color:#fff; font-weight:600}
-.start-list{margin-top:14px}
+.start-list{margin-top:10px}
 .start-list .sl-row{
   display:flex; justify-content:space-between; align-items:center;
-  padding:9px 0; border-bottom:1px solid var(--line); font-size:14px;
+  padding:7px 0; border-bottom:1px solid var(--line); font-size:13.5px;
 }
 .start-list .sl-del{border:none; background:none; color:var(--danger); font-size:13px; cursor:pointer; padding:4px 8px}
 
@@ -244,6 +245,12 @@ input:focus, textarea:focus, .btn:focus-visible, nav button:focus-visible{outlin
 }
 #toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
 .section-hint{font-size:clamp(11.5px, 3.2vw, 12.5px); color:var(--ink-muted); text-align:center; margin:4px 0 14px; letter-spacing:0.04em}
+
+/* ── v7：引導卡 ── */
+.guide-steps div{display:flex; gap:10px; align-items:flex-start; font-size:13.5px; margin:9px 0; line-height:1.65}
+.guide-steps b{flex:none; width:22px; height:22px; border-radius:50%; background:var(--rose-soft);
+  color:var(--rose-text); display:flex; align-items:center; justify-content:center;
+  font-family:var(--num); font-size:13px; font-weight:600; margin-top:1px}
 
 /* ── v6：成就細節 ── */
 .a-date{font-size:9px; color:var(--ink-muted); opacity:.8}
@@ -390,6 +397,20 @@ input:focus, textarea:focus, .btn:focus-visible, nav button:focus-visible{outlin
       <span><i style="background:var(--lavender)"></i>黃體期</span>
     </div>
 
+    <div class="card" id="guideCard" style="display:none">
+      <h3><span class="h-dot" style="background:var(--rose)"></span>第一次使用？三步開始</h3>
+      <div class="guide-steps">
+        <div><b>1</b>按下方「紀錄經期開始」，選妳最近一次月經的第一天</div>
+        <div><b>2</b>之後每天回來「寫今日紀錄」，記身體與心情</div>
+        <div><b>3</b>抽一支今日之籤；紀錄累積會解鎖洞察與成就</div>
+      </div>
+    </div>
+
+    <div class="btn-row" style="margin-bottom:14px">
+      <button class="btn btn-soft" id="btnPeriodStart">紀錄經期開始</button>
+      <button class="btn btn-rose" id="btnJournal">寫今日紀錄</button>
+    </div>
+
     <div class="card next-period" id="nextPeriodCard" style="display:none">
       <div>
         <h3><span class="h-dot" style="background:var(--rose)"></span>下次經期預估</h3>
@@ -406,11 +427,6 @@ input:focus, textarea:focus, .btn:focus-visible, nav button:focus-visible{outlin
     <div class="card qian-card" id="qianCard"></div>
 
     <div class="card memory-card" id="memoryCard" style="display:none"></div>
-
-    <div class="btn-row">
-      <button class="btn btn-soft" id="btnPeriodStart">紀錄經期開始</button>
-      <button class="btn btn-rose" id="btnJournal">寫今日紀錄</button>
-    </div>
   </section>
 
   <!-- ════ 紀錄 ════ -->
@@ -1029,6 +1045,9 @@ function renderToday(){
     if(e.note) h+=`<div style="font-size:13px;margin-top:8px;color:var(--ink)">${esc(e.note)}</div>`;
     box.innerHTML=h;
   }
+  // 第一次使用引導：完全沒資料才顯示
+  const isEmpty = !sortedStarts().length && !Object.keys(state.entries).length;
+  document.getElementById('guideCard').style.display = isEmpty ? 'block' : 'none';
   renderStreakPill();
   renderQian();
   renderMemory();
@@ -1594,6 +1613,7 @@ document.getElementById('savePeriod').addEventListener('click', ()=>{
   save(); closeModal('modalPeriod');
   if(!checkAchievements()) toast('已紀錄經期開始 🌹');
   renderAll();
+  window.scrollTo({top:0, behavior:'smooth'});
 });
 
 /* ═══════════════ 彈窗：今日紀錄 ═══════════════ */
